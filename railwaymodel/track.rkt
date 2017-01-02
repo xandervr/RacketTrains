@@ -7,23 +7,12 @@
 
 (provide make-track)
 
-(define (make-track id nodeA nodeB)
-  (let ((type   'track)
-        (free?  #t))
-
-    (define (free!)
-        (set! free? #t))
-
-    (define (occupy!)
-        (set! free? #f))
+(define (make-track nodeA nodeB)
+  (let ((type   'track))
 
     (define (dispatch msg)
       (cond
-        ((eq? msg 'get-id)  id)
         ((eq? msg 'get-type)    type)
         ((eq? msg 'get-nodeA)   nodeA)
-        ((eq? msg 'get-nodeB)   nodeB)
-        ((eq? msg 'free?)   free?)
-        ((eq? msg 'free!)   (free!))
-        ((eq? msg 'occupy!) (occupy!))))
+        ((eq? msg 'get-nodeB)   nodeB)))
     dispatch))
