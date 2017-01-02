@@ -6,31 +6,33 @@
 ;
 
 (require "locomotive.rkt")
+(require "cart.rkt")
 
 (provide make-train)
 
 (define (make-train id)
   (let ((type 'train)
-        (speed 0)
-        (schedule '())
         (locomotive (make-locomotive id))
         (carts '())
-        (max-speed  0))
+        (speed 0)
+        (schedule '())
+        (max-speed  14))
 
-    (define (add-cart! cart)
-      (set! carts (cons cart carts)))
+    (define (add-cart!)
+      (set! carts (cons (make-cart) carts)))
       
     (define (set-speed! new-speed)
-        (set! speed new-speed)
-        ((locomotive 'set-speed!) new-speed))
+        (set! speed new-speed))
 
-
+    (define (set-schedule! new-schedule)
+        (set! schedule new-schedule))
 
     (define (dispatch msg)
       (cond
-        ((eq? msg 'add-cart!)   add-cart!)
+        ((eq? msg 'add-cart!)   (add-cart!))
         ((eq? msg 'get-speed) speed)
         ((eq? msg 'set-speed!) set-speed!)
+        ((eq? msg 'get-max-speed) max-speed)
         ((eq? msg 'get-schedule)  schedule)
         ((eq? msg 'set-schedule!) set-schedule!)
         ((eq? msg 'get-id)  id)
