@@ -1,14 +1,14 @@
 #lang racket
 
 ;
-; Track ADT
+; Detection-block ADT
 ; Copyright © 2016 Xander Van Raemdonck 2BA CW
 ;
 
-(provide make-track)
+(provide make-detection-block)
 
-(define (make-track id nodeA nodeB)
-  (let ((type   'track)
+(define (make-detection-block id track)
+  (let ((type   'detection-block)
         (free?  #t))
 
     (define (free!)
@@ -21,8 +21,7 @@
       (cond
         ((eq? msg 'get-id)  id)
         ((eq? msg 'get-type)    type)
-        ((eq? msg 'get-nodeA)   nodeA)
-        ((eq? msg 'get-nodeB)   nodeB)
+        ((eq? msg 'get-track)   track)
         ((eq? msg 'free?)   free?)
         ((eq? msg 'free!)   (free!))
         ((eq? msg 'occupy!) (occupy!))))

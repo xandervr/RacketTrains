@@ -1,27 +1,34 @@
 #lang racket
 
+;
+; Train ADT
+; Copyright © 2016 Xander Van Raemdonck 2BA CW
+;
+
 (provide make-train)
 
-(define (make-train id node-A node-B distance)
-  (let ((type       'train)
-        (target-speed 0)
-        (time-table '())
-        (contents   '())
+(define (make-train id track direction)
+  (let ((type 'train)
+        (speed 0)
+        (schedule '())
+        (locomotive #f)
+        (carts '())
         (max-speed  0))
 
-    (define (add! x)
-      (set! contents (cons x contents)))
+    (define (add-cart! cart)
+      (set! carts (cons cart carts)))
       
+    (define (set-speed! new-speed)
+        (set! speed new-speed)
+        ((locomotive 'set-speed!) new-speed))
 
     (define (dispatch msg)
       (cond
-        ((eq? msg 'add!)           add!)
-        ((eq? msg 'get-max-speed)  (calculate-max-speed))
-        ((eq? msg 'get-target-speed) target-speed)
-        ((eq? msg 'set-target-speed!) set-target-speed!)
-        ((eq? msg 'get-position)   (get-position))
-        ((eq? msg 'get-timetable)  timetable)
-        ((eq? msg 'set-timetable!) set-timetable!)
-        ((eq? msg 'get-id)         id)
-        ((eq? msg 'get-type)       type)))
+        ((eq? msg 'add-cart!)   add-cart!)
+        ((eq? msg 'get-speed) speed)
+        ((eq? msg 'set-speed!) set-speed!)
+        ((eq? msg 'get-schedule)  schedule)
+        ((eq? msg 'set-schedule!) set-schedule!)
+        ((eq? msg 'get-id)  id)
+        ((eq? msg 'get-type)    type)))
     dispatch))

@@ -1,21 +1,27 @@
 #lang racket
+
+;
+; Node ADT
+; Copyright © 2016 Xander Van Raemdonck 2BA CW
+;
+
 (provide make-node)
 
 (define (make-node id x y)
   (let ((type   'node)
         (tracks '()))
 
-    (define (get-amount-of-tracks)
-      (define (iter amount tracks)
+    (define (number-of-tracks?)
+      (define (track-number-iter number tracks)
         (if (null? tracks)
-            amount
-            (iter (+ amount 1) (cdr tracks))))
-      (iter 0 tracks))
+            number
+            (track-number-iter (+ number 1) (cdr tracks))))
+      (track-number-iter 0 tracks))
 
     (define (add-track! track)
-      (if (< (get-amount-of-tracks) 2)
+      (if (< (number-of-tracks?) 2)
           (set! tracks (cons track tracks))
-          (error "too many tracks in this node")))
+          (error "ERROR: Number of tracks exceeds node maximum. ----- NODE")))
 
     (define (dispatch msg)
       (cond
