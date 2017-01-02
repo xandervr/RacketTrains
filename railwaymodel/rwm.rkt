@@ -9,7 +9,6 @@
 
 (require "cart.rkt")
 (require "detection-block.rkt")
-(require "locomotive.rkt")
 (require "node.rkt")
 (require "rwm.rkt")
 (require "switch.rkt")
@@ -35,7 +34,7 @@
      (lambda (l)
        (case (string->symbol (car l))
          [(L) (let* ([lid (string->symbol (list-ref l 1))]
-                     [res (make-locomotive lid)])
+                     [res (make-train lid)])
                 (hash-set! ls lid res))]
          [(N) (let* ([id (string->symbol (list-ref l 1))]
                      [x (string->number (list-ref l 2))]

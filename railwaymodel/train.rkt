@@ -5,13 +5,15 @@
 ; Copyright © 2016 Xander Van Raemdonck 2BA CW
 ;
 
+(require "locomotive.rkt")
+
 (provide make-train)
 
-(define (make-train id track direction)
+(define (make-train id)
   (let ((type 'train)
         (speed 0)
         (schedule '())
-        (locomotive #f)
+        (locomotive (make-locomotive id))
         (carts '())
         (max-speed  0))
 
@@ -21,6 +23,8 @@
     (define (set-speed! new-speed)
         (set! speed new-speed)
         ((locomotive 'set-speed!) new-speed))
+
+
 
     (define (dispatch msg)
       (cond
