@@ -48,6 +48,7 @@
 
 (define (simul-loop)
   (when running?
+    (sleep 0.01)
     (for-each (lambda (loco)
                 (displace-loco loco))
               (rwm-ls model))

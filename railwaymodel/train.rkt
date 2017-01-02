@@ -36,5 +36,6 @@
         ((eq? msg 'get-schedule)  schedule)
         ((eq? msg 'set-schedule!) set-schedule!)
         ((eq? msg 'get-id)  id)
-        ((eq? msg 'get-type)    type)))
+        ((eq? msg 'get-type)    type)
+        (else (error "Unknown message --- TRAIN"))))
     dispatch))

@@ -10,29 +10,31 @@
 
   (start-simulator)
   (set-loco-speed! '|1| 1)
-  (sleep 3)
-  (printf "Detection block: ~a" (get-loco-detection-block '|1|))
-  (newline)
-  (printf "locomotive speed: ~a" (get-loco-speed '|1|))
 
-  (define (update-train train)
-    (define (decide-train-speed train)
-      #f)
+  (define (update NMBS)
+    (hash-for-each (rwm-ls rwm) (lambda (id train) (process-train NMBS train))))
 
-    #f)
+  (define (calculate-train-speed NMBS train)
+    (define schedule (list 'D2 'D3 'D4))
+    (printf "Loco speed: ~a, Location: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)))
+    (let ((location (get-loco-detection-block (train 'get-id))))
+      (cond
+        ((eq? location (car (reverse schedule))) 0)
+        (else (train 'get-max-speed)))))
 
-  (define (update Z21)
-    (for-each update-train (rwm 'get-trains)))
+  (define (process-train NMBS train)
+    ;(define schedule ((NMBS 'get-schedule) (train 'get-id)))
+    (define schedule (list 'D2 'D3 'D4))
 
-  (define (get-location id)
-    (printf "Detection block: ~a" (get-loco-detection-block id)))
+    (if (null? schedule)
+      (set-loco-speed! (train 'get-id) 0)
+      (set-loco-speed! (train 'get-id) (calculate-train-speed NMBS train))))
 
 
   (define (dispatch msg)
     (cond
-      ((eq? msg 'update)    update)
-      ((eq? msg 'get-location) get-location)
-      (else                 (error "msg not understood"))))
+      ((eq? msg 'update)  update)
+      (else (error "msg not understood"))))
 
 
 
