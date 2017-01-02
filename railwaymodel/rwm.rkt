@@ -33,15 +33,15 @@
     (for-each
      (lambda (l)
        (case (string->symbol (car l))
-         [(L) (let* ([lid (list-ref l 1)]
+         [(L) (let* ([lid (string->number (list-ref l 1))]
                      [res (make-train lid)])
                 (hash-set! ls lid res))]
-         [(N) (let* ([id (list-ref l 1)]
+         [(N) (let* ([id (string->number (list-ref l 1))]
                      [x (string->number (list-ref l 2))]
                      [y (string->number (list-ref l 3))]
                      [res (make-node id x y)])
                 (hash-set! ns id res))]
-         [(S) (let* ([id (list-ref l 1)]
+         [(S) (let* ([id (string->number (list-ref l 1))]
                      [nA (string->symbol (list-ref l 2))]
                      [nB (string->symbol (list-ref l 3))]
                      [nC (string->symbol (list-ref l 4))]
@@ -51,7 +51,7 @@
                      [nB (string->symbol (list-ref l 2))]
                      [res (make-track nA nB)])
                 (set! ts (cons res ts)))]
-         [(D) (let* ([id (list-ref l 1)]
+         [(D) (let* ([id (string->number (list-ref l 1))]
                      [nA (string->symbol (list-ref l 2))]
                      [nB (string->symbol (list-ref l 3))]
                      [res (make-detection-block id (make-track nA nB))])
