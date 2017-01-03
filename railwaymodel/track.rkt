@@ -18,7 +18,9 @@
         (set! occupied train-id))
 
     (define (free? [train-id #f])
-      (eq? train-id occupied))
+      (if (not occupied)
+        #t
+        occupied))
 
     (define (dispatch msg)
       (cond

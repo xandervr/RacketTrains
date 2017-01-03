@@ -12,7 +12,16 @@
 (define (make-NMBS)
   (define rwm (load-rwm "railway.txt"))
 
+  (define (print-rail-status)
+    (for-each
+      (lambda (track)
+        (printf "Track: (~a ~a) ~a\n" (track 'get-nodeA) (track 'get-nodeB) ((track 'free?)))) (rwm-ts rwm))
+    (hash-for-each (rwm-ds rwm)
+      (lambda (id ds)
+        (printf "Db: ~a ~a\n" id ((ds 'free?))))))
+
   (define (update infrabel)
+    (print-rail-status)
     (hash-for-each (rwm-ls rwm) 
       (lambda (id train) 
         (process-train infrabel train))))
@@ -21,20 +30,22 @@
     (let ([location (hash-ref (rwm-ds rwm) ((infrabel 'get-train-location) (train 'get-id)) (lambda () #f))])
 
       (define (occupy-next-track)
-        (let ([schedule (cdr (train 'get-schedule))])
-          (when (> (length schedule) 1)
+        (let ([schedule (train 'get-schedule)])
+          (when (> (length (cdr schedule)) 1)
             (define (process-next-track schedule free-tracks)
               (define db (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule)) (lambda () #f)))
               (define t (find-track rwm (car schedule) (cadr schedule)))
               (cond
                 (db (when ((db 'free?) (train 'get-id))
-                  (for-each 
-                    (cons db free-tracks) 
-                    (lambda (t-db) ((t-db 'occupy!) (train 'get-id))))))
+                  (for-each  
+                    (lambda (t-db) ((t-db 'occupy!) (train 'get-id))) (cons db free-tracks))))
                 (t (when ((t 'free?) (train 'get-id)) 
                   (process-next-track (cdr schedule) (cons t free-tracks))))
                 (else (error "SWITCH"))))
-            (process-next-track schedule '()))))
+
+            (define dbf (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule)) (lambda () #f)))
+            (define tf (find-track rwm (car schedule) (cadr schedule)))
+            (process-next-track (cdr schedule) (list (or dbf tf))))))
 
       (define (process-schedule schedule)
         (when (> (length schedule) 1)
