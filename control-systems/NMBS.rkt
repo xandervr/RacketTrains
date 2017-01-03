@@ -18,19 +18,20 @@
             (process-train infrabel train))))
 
     (define (process-train infrabel train)
-      (let* ([location (hash-ref (rwm-ds rwm) ((infrabel 'get-train-location) (train 'get-id)))]
-              [nA ((location 'get-track) 'get-nodeA)] 
-              [nB ((location 'get-track) 'get-nodeB)]
-              [schedule (train 'get-schedule)])
-
+      (let ([location (hash-ref (rwm-ds rwm) ((infrabel 'get-train-location) (train 'get-id)) (lambda () #f))])
 
         (define (process-schedule schedule)
+          (define dbf (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule)) (lambda () #f)))
+          (define tf (find-track rwm (car schedule) (cadr schedule)))
           (cond
-            ((or (null? schedule) (null? (cdr schedule))) (error "ENDED"))
-            ((eq? (find-db rwm (car schedule) (cadr schedule)) (location 'get-id)) (cons (car schedule) (cdr schedule)))
-            (else (process-schedule (cdr schedule)))))
-        (set! schedule (process-schedule schedule))
-        ((train 'set-schedule!) schedule)))
+            (location (if (and dbf (eq? (location 'get-id) (dbf 'get-id)))
+                        ((train 'set-schedule!) schedule)
+                        (process-schedule (cdr schedule))))
+            (else (if dbf
+                    (process-schedule (cdr schedule))
+                    ((train 'set-schedule!) schedule)))))
+        (process-schedule (train 'get-schedule))))
+      
 
     (define (get-schedule id)
       ((hash-ref (rwm-ls rwm) id) 'get-schedule))

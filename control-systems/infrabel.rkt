@@ -17,20 +17,30 @@
     (define schedule ((NMBS 'get-schedule) (train 'get-id)))
 
     (define (calculate-track-max-speed)
-      (define db (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule))))
-      (define t (find-track rwm (car schedule) (cadr schedule)))
-      (let ([max-speed (if db ((db 'get-track) 'get-max-speed) (t 'get-max-speed))])
+      (define dbf (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule)) (lambda () #f)))
+      (define tf (find-track rwm (car schedule) (cadr schedule)))
+      (let ([max-speed (if dbf ((dbf 'get-track) 'get-max-speed) (tf 'get-max-speed))])
         (define (calculate-iter schedule)
           (define db (find-db rwm (cadr schedule) (caddr schedule)))
           (define t (find-track rwm (cadr schedule) (caddr schedule)))
           (cond
             ((null? schedule) max-speed)
-            (db (set! db (hash-ref (rwm-ds rwm) db)) (set! max-speed (min max-speed ((db 'get-track) 'get-max-speed))) max-speed)
+            (db (set! db (hash-ref (rwm-ds rwm) db (lambda () #f))) (set! max-speed (min max-speed ((db 'get-track) 'get-max-speed))) max-speed)
             (t (set! max-speed (min max-speed (t 'get-max-speed))) (calculate-iter (cdr schedule)))
             (else (error "Could't calulate max speed."))))
         (calculate-iter schedule)))
 
-    (printf "Loco speed: ~a, Location: ~a, Max speed: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)) (((hash-ref (rwm-ds rwm) (get-loco-detection-block (train 'get-id))) 'get-track) 'get-max-speed))
+    ;
+    ; DEBUGGING
+    ;
+    (define ds (hash-ref (rwm-ds rwm) (get-loco-detection-block (train 'get-id)) (lambda () #f)))
+    (if ds 
+      (printf "Loco speed: ~a, Location: ~a, Max speed: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)) ((ds 'get-track) 'get-max-speed))
+      (printf "Loco speed: ~a, Location: ~a, Max speed: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)) #f))
+    
+    ;;;; END
+
+
     (let ((location (get-loco-detection-block (train 'get-id))))
       (cond
         ; TODO
@@ -39,7 +49,6 @@
         (else (min (calculate-track-max-speed) (train 'get-max-speed))))))
 
   (define (process-train NMBS train)
-    ;(define schedule ((NMBS 'get-schedule) (train 'get-id)))
     (define schedule ((NMBS 'get-schedule) (train 'get-id)))
 
     (if (null? schedule)
