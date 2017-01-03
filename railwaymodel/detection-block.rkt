@@ -5,25 +5,30 @@
 ; Copyright © 2016 Xander Van Raemdonck 2BA CW
 ;
 
+(require "track.rkt")
+
 (provide make-detection-block)
 
-(define (make-detection-block id track)
+(define (make-detection-block id nodeA nodeB [max-speed 10])
   (let ((type   'detection-block)
-        (free?  #t))
+        (track (make-track nodeA nodeB max-speed)))
 
     (define (free!)
-        (set! free? #t))
+        (track 'free!))
 
-    (define (occupy!)
-        (set! free? #f))
+    (define (occupy! train-id)
+        ((track 'occupy!) train-id))
+
+    (define (free? [train-id #f])
+        ((track 'free?) train-id))
 
     (define (dispatch msg)
       (cond
         ((eq? msg 'get-id)  id)
         ((eq? msg 'get-type)    type)
         ((eq? msg 'get-track)   track)
-        ((eq? msg 'free?)   free?)
+        ((eq? msg 'free?) free?)
         ((eq? msg 'free!)   (free!))
-        ((eq? msg 'occupy!) (occupy!))
+        ((eq? msg 'occupy!) occupy!)
         (else (error "Unknown message ---- Detection-block"))))
     dispatch))

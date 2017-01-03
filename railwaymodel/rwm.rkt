@@ -57,7 +57,7 @@
                      [nA (string->symbol (list-ref l 2))]
                      [nB (string->symbol (list-ref l 3))]
                      [ms (string->number (list-ref l 4))]
-                     [res (make-detection-block id (make-track nA nB ms))])
+                     [res (make-detection-block id nA nB ms)])
                 (hash-set! ds id res))]))
      lines)
     (rwm ls ns ss ts ds)))

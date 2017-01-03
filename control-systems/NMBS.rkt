@@ -20,17 +20,31 @@
     (define (process-train infrabel train)
       (let ([location (hash-ref (rwm-ds rwm) ((infrabel 'get-train-location) (train 'get-id)) (lambda () #f))])
 
+        (define (occupy-next-track)
+          (let ([schedule (cdr (train 'get-schedule))])
+            (when (> (length schedule) 1)
+              (define (process-next-track schedule free-tracks)
+                (define db (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule)) (lambda () #f)))
+                (define t (find-track rwm (car schedule) (cadr schedule)))
+                (cond
+                  (db (when ((db 'free?) (train 'get-id))
+                        (for-each free-tracks (lambda (t-db) ((t-db 'occupy!) (train 'get-id))))))
+                  (t (when ((t 'free?) (train 'get-id)) 
+                      ((t 'occupy!) (train 'get-id)) (process-next-track (cdr schedule) (cons t free-tracks))))
+                  (else (error "SWITCH"))))
+              (process-next-track schedule '()))))
+
         (define (process-schedule schedule)
           (when (> (length schedule) 1)
-          (define dbf (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule)) (lambda () #f)))
-          (define tf (find-track rwm (car schedule) (cadr schedule)))
-          (cond
-            (location (if (and dbf (eq? (location 'get-id) (dbf 'get-id)))
-                        ((train 'set-schedule!) schedule)
-                        (process-schedule (cdr schedule))))
-            (else (if dbf
-                    (process-schedule (cdr schedule))
-                    ((train 'set-schedule!) schedule))))))
+            (define db (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule)) (lambda () #f)))
+            (define t (find-track rwm (car schedule) (cadr schedule)))
+            (cond
+              (location (cond 
+                          ((and db (eq? (location 'get-id) (db 'get-id))) ((train 'set-schedule!) schedule) (occupy-next-track))
+                          (else ((or t db) 'free!) (process-schedule (cdr schedule)))))
+              (else (cond 
+                (db (db 'free!) (process-schedule (cdr schedule)))
+                (else ((train 'set-schedule!) schedule)))))))
         (process-schedule (train 'get-schedule))))
       
     (define (add-schedule! train-id schedule)
@@ -38,6 +52,8 @@
         (if train
           ((train 'set-schedule!) schedule)
           (error "Train id not found!"))))
+
+    
 
     (define (get-schedule id)
       ((hash-ref (rwm-ls rwm) id) 'get-schedule))
