@@ -31,16 +31,25 @@
 
       (define (occupy-next-track)
         (let ([schedule (train 'get-schedule)])
+
+          (define (set-switch switch schedule-next)
+            (if (eq? schedule-next (switch 'get-nodeB))
+                ((infrabel 'set-switch-state!) (switch 'get-id) 1)
+              ((infrabel 'set-switch-state!) (switch 'get-id) 2)))
+
           (when (> (length (cdr schedule)) 1)
             (define (process-next-track schedule free-tracks)
               (define t (fetch-track rwm (car schedule) (cadr schedule)))
               (cond
                 ((and t (eq? (t 'get-type) 'detection-block)) (when ((t 'free?) (train 'get-id))
                   (for-each  
-                    (lambda (t-db) ((t-db 'occupy!) (train 'get-id))) (cons t free-tracks))))
-                (t (when ((t 'free?) (train 'get-id)) 
-                  (process-next-track (cdr schedule) (cons t free-tracks))))
-                (else (error "SWITCH"))))
+                    (lambda (t-db) 
+                      ((t-db 'occupy!) (train 'get-id)))
+                       (cons t free-tracks))))
+                (t (when ((t 'free?) (train 'get-id))
+                    (when (eq? (t 'get-type) 'switch) (set-switch t (cadr schedule)))
+                    (process-next-track (cdr schedule) (cons t free-tracks))))
+                (else (error "OCCUPYERROR"))))
 
             (define tf (fetch-track rwm (car schedule) (cadr schedule)))
             (process-next-track (cdr schedule) (list tf)))))

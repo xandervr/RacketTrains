@@ -53,14 +53,17 @@
   (define (get-switch-state id)
     (get-switch-position id))
 
+  (define (set-switch-state! id pos)
+    (set-switch-position! id pos))
+
   (define (dispatch msg)
     (cond
       ((eq? msg 'update)  update)
       ((eq? msg 'get-train-location) get-train-location)
       ((eq? msg 'get-train-speed) get-train-speed)
       ((eq? msg 'get-switch-state) get-switch-state)
+      ((eq? msg 'set-switch-state!) set-switch-state!)
       (else (error "Unknown message ---- Infrabel"))))
 
   (start-simulator)
-  (set-switch-position! 'S1 2)
   dispatch)
