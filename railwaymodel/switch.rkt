@@ -7,22 +7,35 @@
 
 (provide make-switch)
 
-(define (make-switch id nodeA nodeB nodeC)
+(define (make-switch id nodeA nodeB nodeC [max-speed 10])
   (let ((type   'switch)
-        (position   nodeB)
-        (free?  #f))
+        (position   1)
+        (occupied  #f))
 
     (define (free!)
-      (set! free? #t))
+        (set! occupied #f))
 
-    (define (occupy!)
-      (set! free? #f))
+    (define (occupy! train-id)
+        (set! occupied train-id))
+
+    (define (free? [train-id #f])
+      (if (not occupied)
+        #t
+        occupied))
 
     (define (switch!)
-      (if (eq? position nodeB)
-          (set! position nodeC)
-          (set! position nodeB))
+      (if (= position 1)
+        (set! position 2)
+        (set! position 1))
       position)
+
+    (define (get-track)
+      #t)
+
+    (define (get-nodeB)
+      (if (= position 1)
+        nodeB
+        nodeC))
 
     (define (dispatch msg)
       (cond
@@ -31,8 +44,10 @@
         ((eq? msg 'get-nodeA)   nodeA)
         ((eq? msg 'get-nodeB)   nodeB)
         ((eq? msg 'get-nodeC)   nodeC)
+        ((eq? msg 'free?) free?)
         ((eq? msg 'free!) (free!))
-        ((eq? msg 'occupy!) (occupy!))
+        ((eq? msg 'occupy!) occupy!)
         ((eq? msg 'get-position) position)
+        ((eq? msg 'get-max-speed) max-speed)
         ((eq? msg 'switch!  (switch!)))))
     dispatch))

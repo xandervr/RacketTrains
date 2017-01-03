@@ -79,8 +79,5 @@
       ((eq? msg 'track-free?) track-free?)
       ((eq? msg 'update) update)))
 
-
-  (add-schedule! 'T1 '(A1 A2 A3 A4 A5 A6 A7 A1 A2))
-
   dispatch)
 

@@ -4,7 +4,6 @@
 ; Infrabel ADT
 ; Copyright © 2016 Xander Van Raemdonck 2BA CW
 ;
-
 (require "../railwaymodel/rwm.rkt")
 (require "../simulator/interface.rkt")
 
@@ -13,7 +12,7 @@
 (define (make-infrabel)
   (define rwm (load-rwm "railway.txt"))
 
-  (start-simulator)
+  
 
   (define (update NMBS)
     (hash-for-each (rwm-ls rwm) (lambda (id train) (process-train NMBS train))))
@@ -34,27 +33,13 @@
             (else (error "Could't calulate max speed."))))
         (calculate-iter schedule)))
 
-    ;
-    ; DEBUGGING
-    ;
-    ; (define ds (hash-ref (rwm-ds rwm) (get-loco-detection-block (train 'get-id)) (lambda () #f)))
-    ; (if ds 
-    ;   (printf "Loco speed: ~a, Location: ~a, Max speed: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)) ((ds 'get-track) 'get-max-speed))
-    ;   (printf "Loco speed: ~a, Location: ~a, Max speed: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)) #f))
-    
-    ;;;; END
-
-
     (let ((location (get-loco-detection-block (train 'get-id))))
       (cond
-        ; TODO
-        ; Track max-speed
         ((= (length schedule) 2) 0)
         (else (min (calculate-track-max-speed) (train 'get-max-speed))))))
 
   (define (process-train NMBS train)
     (define schedule ((NMBS 'get-schedule) (train 'get-id)))
-
     (if (null? schedule)
       (set-loco-speed! (train 'get-id) 0)
       (set-loco-speed! (train 'get-id) (calculate-train-speed NMBS train))))
@@ -65,13 +50,17 @@
   (define (get-train-speed id)
     (get-loco-speed id))
 
+  (define (get-switch-state id)
+    (get-switch-position id))
+
   (define (dispatch msg)
     (cond
       ((eq? msg 'update)  update)
       ((eq? msg 'get-train-location) get-train-location)
       ((eq? msg 'get-train-speed) get-train-speed)
+      ((eq? msg 'get-switch-state) get-switch-state)
       (else (error "Unknown message ---- Infrabel"))))
 
-
-
+  (start-simulator)
+  (set-switch-position! 'S1 2)
   dispatch)
