@@ -33,30 +33,27 @@
         (let ([schedule (train 'get-schedule)])
           (when (> (length (cdr schedule)) 1)
             (define (process-next-track schedule free-tracks)
-              (define db (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule)) (lambda () #f)))
-              (define t (find-track rwm (car schedule) (cadr schedule)))
+              (define t (fetch-track rwm (car schedule) (cadr schedule)))
               (cond
-                (db (when ((db 'free?) (train 'get-id))
+                ((and t (eq? (t 'get-type) 'detection-block)) (when ((t 'free?) (train 'get-id))
                   (for-each  
-                    (lambda (t-db) ((t-db 'occupy!) (train 'get-id))) (cons db free-tracks))))
+                    (lambda (t-db) ((t-db 'occupy!) (train 'get-id))) (cons t free-tracks))))
                 (t (when ((t 'free?) (train 'get-id)) 
                   (process-next-track (cdr schedule) (cons t free-tracks))))
                 (else (error "SWITCH"))))
 
-            (define dbf (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule)) (lambda () #f)))
-            (define tf (find-track rwm (car schedule) (cadr schedule)))
-            (process-next-track (cdr schedule) (list (or dbf tf))))))
+            (define tf (fetch-track rwm (car schedule) (cadr schedule)))
+            (process-next-track (cdr schedule) (list tf)))))
 
       (define (process-schedule schedule)
         (when (> (length schedule) 1)
-          (define db (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule)) (lambda () #f)))
-          (define t (find-track rwm (car schedule) (cadr schedule)))
+          (define t (fetch-track rwm (car schedule) (cadr schedule)))
           (cond
             (location (cond 
-              ((and db (eq? (location 'get-id) (db 'get-id))) ((train 'set-schedule!) schedule) (occupy-next-track))
-              (else ((or t db) 'free!) (process-schedule (cdr schedule)))))
+              ((and t (eq? (t 'get-type) 'detection-block) (eq? (location 'get-id) (t 'get-id))) ((train 'set-schedule!) schedule) (occupy-next-track))
+              (else (t 'free!) (process-schedule (cdr schedule)))))
             (else (cond 
-              (db (db 'free!) (process-schedule (cdr schedule)))
+              ((and t (eq? (t 'get-type) 'detection-block)) (t 'free!) (process-schedule (cdr schedule)))
               (else ((train 'set-schedule!) schedule)))))))
       (process-schedule (train 'get-schedule))))
 
@@ -70,10 +67,8 @@
     ((hash-ref (rwm-ls rwm) id) 'get-schedule))
 
   (define (track-free? nA nB)
-    (define db (hash-ref (rwm-ds rwm) (find-db rwm nA nB) (lambda () #f)))
-    (define t (find-track rwm nA nB))
-    (cond 
-      (db ((db 'free?)))
+    (define t (fetch-track rwm nA nB))
+    (cond
       (t ((t 'free?)))
       (else #f)))
 

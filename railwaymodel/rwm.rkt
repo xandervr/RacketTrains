@@ -16,6 +16,7 @@
 
 (provide (struct-out rwm)
          load-rwm
+         fetch-track
          find-track
          find-db)
 
@@ -63,6 +64,20 @@
     (rwm ls ns ss ts ds)))
 
 ; (define rwm-be (load-rwm "be_simple.txt"))
+
+
+
+(define (fetch-track rwm nA nB)
+  (define db (hash-ref (rwm-ds rwm) (find-db rwm nA nB) (lambda () #f)))
+  (define db-reverse (hash-ref (rwm-ds rwm) (find-db rwm nB nA) (lambda () #f)))
+  (define t (find-track rwm nA nB))
+  (define t-reverse (find-track rwm nB nA))
+  (cond
+    (db db)
+    (db-reverse db-reverse)
+    (t t)
+    (t-reverse)
+    (else #f)))
 
 (define (track-eqv? t1 t2)
   (or (and (eqv? (t1 'get-nodeA) (t2 'get-nodeA))
