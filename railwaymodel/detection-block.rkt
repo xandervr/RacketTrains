@@ -24,5 +24,6 @@
         ((eq? msg 'get-track)   track)
         ((eq? msg 'free?)   free?)
         ((eq? msg 'free!)   (free!))
-        ((eq? msg 'occupy!) (occupy!))))
+        ((eq? msg 'occupy!) (occupy!))
+        (else (error "Unknown message ---- Detection-block"))))
     dispatch))

@@ -15,7 +15,9 @@
 (require "train.rkt")
 
 (provide (struct-out rwm)
-         load-rwm)
+         load-rwm
+         find-track
+         find-db)
 
 
 (struct rwm (ls ns ss ts ds))
@@ -48,17 +50,40 @@
                 (hash-set! ss id res))]
          [(T) (let* ([nA (string->symbol (list-ref l 1))]
                      [nB (string->symbol (list-ref l 2))]
-                     [res (make-track nA nB)])
+                     [ms (string->number (list-ref l 3))]
+                     [res (make-track nA nB ms)])
                 (set! ts (cons res ts)))]
          [(D) (let* ([id (string->symbol (list-ref l 1))]
                      [nA (string->symbol (list-ref l 2))]
                      [nB (string->symbol (list-ref l 3))]
-                     [res (make-detection-block id (make-track nA nB))])
+                     [ms (string->number (list-ref l 4))]
+                     [res (make-detection-block id (make-track nA nB ms))])
                 (hash-set! ds id res))]))
      lines)
     (rwm ls ns ss ts ds)))
 
 ; (define rwm-be (load-rwm "be_simple.txt"))
 
+(define (track-eqv? t1 t2)
+  (or (and (eqv? (t1 'get-nodeA) (t2 'get-nodeA))
+           (eqv? (t1 'get-nodeB) (t2 'get-nodeB)))
+      (and (eqv? (t1 'get-nodeA) (t2 'get-nodeB))
+           (eqv? (t1 'get-nodeB) (t2 'get-nodeA)))))
 
+(define (find-track rwm n1 n2)
+  (define track (findf (lambda (t2)
+                     (let ([t1 (make-track n1 n2)])
+                       (track-eqv? t1 t2)))
+                   (rwm-ts rwm)))
+  track)
+
+(define (find-db rwm n1 n2)
+  (define d #f)
+  (hash-for-each (rwm-ds rwm) 
+    (lambda (id detection-block) 
+      (let   ([t1 (make-track n1 n2)]
+              [t2 (detection-block 'get-track)])
+      (when (track-eqv? t1 t2)
+        (set! d (detection-block 'get-id))))))
+  d)
 

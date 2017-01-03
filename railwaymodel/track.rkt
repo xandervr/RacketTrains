@@ -7,12 +7,13 @@
 
 (provide make-track)
 
-(define (make-track nodeA nodeB)
+(define (make-track nodeA nodeB [max-speed 10])
   (let ((type   'track))
 
     (define (dispatch msg)
       (cond
         ((eq? msg 'get-type)    type)
         ((eq? msg 'get-nodeA)   nodeA)
-        ((eq? msg 'get-nodeB)   nodeB)))
+        ((eq? msg 'get-nodeB)   nodeB)
+        ((eq? msg 'get-max-speed) max-speed)))
     dispatch))

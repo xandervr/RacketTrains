@@ -11,8 +11,8 @@
 
 
     (define (loop)
+      ((NMBS 'update) infrabel)
       ((infrabel 'update) NMBS)
-      ;((NMBS 'update) infrabel)
       (sleep 0.1)
       (loop))
 

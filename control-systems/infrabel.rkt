@@ -9,32 +9,51 @@
   (define rwm (load-rwm "railway.txt"))
 
   (start-simulator)
-  (set-loco-speed! '|1| 1)
 
   (define (update NMBS)
     (hash-for-each (rwm-ls rwm) (lambda (id train) (process-train NMBS train))))
 
   (define (calculate-train-speed NMBS train)
-    (define schedule (list 'D2 'D3 'D4))
-    (printf "Loco speed: ~a, Location: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)))
+    (define schedule ((NMBS 'get-schedule) (train 'get-id)))
+
+    (define (calculate-track-max-speed)
+      (define db (hash-ref (rwm-ds rwm) (find-db rwm (car schedule) (cadr schedule))))
+      (define t (find-track rwm (car schedule) (cadr schedule)))
+      (let ([max-speed (if db ((db 'get-track) 'get-max-speed) (t 'get-max-speed))])
+        (define (calculate-iter schedule)
+          (define db (find-db rwm (cadr schedule) (caddr schedule)))
+          (define t (find-track rwm (cadr schedule) (caddr schedule)))
+          (cond
+            ((null? schedule) max-speed)
+            (db (set! db (hash-ref (rwm-ds rwm) db)) (set! max-speed (min max-speed ((db 'get-track) 'get-max-speed))) max-speed)
+            (t (set! max-speed (min max-speed (t 'get-max-speed))) (calculate-iter (cdr schedule)))
+            (else (error "Could't calulate max speed."))))
+        (calculate-iter schedule)))
+
+    (printf "Loco speed: ~a, Location: ~a, Max speed: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)) (((hash-ref (rwm-ds rwm) (get-loco-detection-block (train 'get-id))) 'get-track) 'get-max-speed))
     (let ((location (get-loco-detection-block (train 'get-id))))
       (cond
-        ((eq? location (car (reverse schedule))) 0)
-        (else (train 'get-max-speed)))))
+        ; TODO
+        ; Track max-speed
+        ((eq? location (find-db rwm (cadr (reverse schedule)) (car (reverse schedule)))) 0)
+        (else (min (calculate-track-max-speed) (train 'get-max-speed))))))
 
   (define (process-train NMBS train)
     ;(define schedule ((NMBS 'get-schedule) (train 'get-id)))
-    (define schedule (list 'D2 'D3 'D4))
+    (define schedule ((NMBS 'get-schedule) (train 'get-id)))
 
     (if (null? schedule)
       (set-loco-speed! (train 'get-id) 0)
       (set-loco-speed! (train 'get-id) (calculate-train-speed NMBS train))))
 
+  (define (get-train-location id)
+    (get-loco-detection-block id))
 
   (define (dispatch msg)
     (cond
       ((eq? msg 'update)  update)
-      (else (error "msg not understood"))))
+      ((eq? msg 'get-train-location) get-train-location)
+      (else (error "Unknown message ---- Infrabel"))))
 
 
 

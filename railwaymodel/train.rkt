@@ -15,7 +15,7 @@
         (locomotive (make-locomotive id))
         (carts '())
         (speed 0)
-        (schedule '())
+        (schedule (list 'A1 'A2 'A3 'A4 'A5))
         (max-speed  14))
 
     (define (add-cart!)
