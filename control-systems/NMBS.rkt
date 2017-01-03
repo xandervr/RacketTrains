@@ -7,7 +7,7 @@
 
 (require "../railwaymodel/rwm.rkt")
 
-(provide make-NMBS)
+(provide  make-NMBS)
 
 (define (make-NMBS)
   (define rwm (load-rwm "railway.txt"))
@@ -66,15 +66,22 @@
         ((train 'set-schedule!) schedule)
         (error "Train id not found!"))))
 
-
-
   (define (get-schedule id)
     ((hash-ref (rwm-ls rwm) id) 'get-schedule))
+
+  (define (track-free? nA nB)
+    (define db (hash-ref (rwm-ds rwm) (find-db rwm nA nB) (lambda () #f)))
+    (define t (find-track rwm nA nB))
+    (cond 
+      (db ((db 'free?)))
+      (t ((t 'free?)))
+      (else #f)))
 
   (define (dispatch msg)
     (cond
       ((eq? msg 'add-schedule!) add-schedule!)
       ((eq? msg 'get-schedule) get-schedule)
+      ((eq? msg 'track-free?) track-free?)
       ((eq? msg 'update) update)))
 
   (add-schedule! 'T1 '(A1 A2 A3 A4 A5 A6))

@@ -1,5 +1,10 @@
 #lang racket
 
+;
+; Infrabel ADT
+; Copyright © 2016 Xander Van Raemdonck 2BA CW
+;
+
 (require "../railwaymodel/rwm.rkt")
 (require "../simulator/interface.rkt")
 
@@ -58,10 +63,14 @@
   (define (get-train-location id)
     (get-loco-detection-block id))
 
+  (define (get-train-speed id)
+    (get-loco-speed id))
+
   (define (dispatch msg)
     (cond
       ((eq? msg 'update)  update)
       ((eq? msg 'get-train-location) get-train-location)
+      ((eq? msg 'get-train-speed) get-train-speed)
       (else (error "Unknown message ---- Infrabel"))))
 
 
