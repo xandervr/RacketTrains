@@ -16,7 +16,7 @@
         (carts '())
         (speed 0)
         (schedule '())
-        (max-speed  14))
+        (max-speed  3))
 
     (define (add-cart!)
       (set! carts (cons (make-cart) carts)))

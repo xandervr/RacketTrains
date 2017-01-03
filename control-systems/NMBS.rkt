@@ -21,7 +21,7 @@
         (printf "Db: ~a ~a\n" id ((ds 'free?))))))
 
   (define (update infrabel)
-    (print-rail-status)
+    ;(print-rail-status)
     (hash-for-each (rwm-ls rwm) 
       (lambda (id train) 
         (process-train infrabel train))))
@@ -84,7 +84,8 @@
       ((eq? msg 'track-free?) track-free?)
       ((eq? msg 'update) update)))
 
-  (add-schedule! 'T1 '(A1 A2 A3 A4 A5 A6))
+
+  (add-schedule! 'T1 '(A1 A2 A3 A4 A5 A6 A7 A1 A2))
 
   dispatch)
 

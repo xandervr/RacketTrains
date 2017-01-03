@@ -38,10 +38,10 @@
     ;
     ; DEBUGGING
     ;
-    (define ds (hash-ref (rwm-ds rwm) (get-loco-detection-block (train 'get-id)) (lambda () #f)))
-    (if ds 
-      (printf "Loco speed: ~a, Location: ~a, Max speed: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)) ((ds 'get-track) 'get-max-speed))
-      (printf "Loco speed: ~a, Location: ~a, Max speed: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)) #f))
+    ; (define ds (hash-ref (rwm-ds rwm) (get-loco-detection-block (train 'get-id)) (lambda () #f)))
+    ; (if ds 
+    ;   (printf "Loco speed: ~a, Location: ~a, Max speed: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)) ((ds 'get-track) 'get-max-speed))
+    ;   (printf "Loco speed: ~a, Location: ~a, Max speed: ~a\n" (get-loco-speed (train 'get-id)) (get-loco-detection-block (train 'get-id)) #f))
     
     ;;;; END
 
@@ -50,7 +50,7 @@
       (cond
         ; TODO
         ; Track max-speed
-        ((eq? location (find-db rwm (cadr (reverse schedule)) (car (reverse schedule)))) 0)
+        ((= (length schedule) 2) 0)
         (else (min (calculate-track-max-speed) (train 'get-max-speed))))))
 
   (define (process-train NMBS train)
