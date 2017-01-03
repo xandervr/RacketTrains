@@ -69,14 +69,10 @@
 
 (define (fetch-track rwm nA nB)
   (define db (hash-ref (rwm-ds rwm) (find-db rwm nA nB) (lambda () #f)))
-  (define db-reverse (hash-ref (rwm-ds rwm) (find-db rwm nB nA) (lambda () #f)))
   (define t (find-track rwm nA nB))
-  (define t-reverse (find-track rwm nB nA))
   (cond
     (db db)
-    (db-reverse db-reverse)
     (t t)
-    (t-reverse)
     (else #f)))
 
 (define (track-eqv? t1 t2)
@@ -87,9 +83,9 @@
 
 (define (find-track rwm n1 n2)
   (define track (findf (lambda (t2)
-                     (let ([t1 (make-track n1 n2)])
-                       (track-eqv? t1 t2)))
-                   (rwm-ts rwm)))
+   (let ([t1 (make-track n1 n2)])
+     (track-eqv? t1 t2)))
+  (rwm-ts rwm)))
   track)
 
 (define (find-db rwm n1 n2)
@@ -97,7 +93,7 @@
   (hash-for-each (rwm-ds rwm) 
     (lambda (id detection-block) 
       (let   ([t1 (make-track n1 n2)]
-              [t2 (detection-block 'get-track)])
+        [t2 (detection-block 'get-track)])
       (when (track-eqv? t1 t2)
         (set! d (detection-block 'get-id))))))
   d)
