@@ -29,43 +29,43 @@
         ([track (fetch-track rwm (current-node schedule) (next-node schedule))])
         (cond
           ((null? (schedule-rest schedule)) #f)
-          ((eq? (track 'get-type) 'detection-block) (track 'get-id))
+          ((detection-block? track) (id track))
           (else (find-next-db (schedule-rest schedule))))))
 
   (define (calculate-train-speed-direction nA nB)
     (let ([t (fetch-track rwm nA nB)])
-      (if (eq? (t 'get-nodeA) nA)
+      (if (eq? (node-a t) nA)
           +1
           -1)))
 
   (define (calculate-train-speed NMBS train)
-    (let ([schedule ((NMBS 'get-schedule) (train 'get-id))]
-          [location (get-loco-detection-block (train 'get-id))])
+    (let ([schedule (get-train-schedule NMBS (id train))]
+          [location (get-loco-detection-block (id train))])
 
       (define (calculate-track-max-speed)
         (let* ([t (fetch-track rwm (current-node schedule) (next-node schedule))]
-               [max-speed (t 'get-max-speed)])
+               [max-spd (max-speed t)])
           
           (define (calculate-iter schedule)
             (let ([t (fetch-track rwm (next-node schedule) (second-node schedule))])
               (cond
-                ((null? schedule) max-speed)
-                ((and t (eq? (t 'get-type) 'detection-block)) (set! max-speed (min max-speed (t 'get-max-speed))) max-speed)
-                (t (set! max-speed (min max-speed (t 'get-max-speed))) (calculate-iter (schedule-rest schedule)))
+                ((null? schedule) max-spd)
+                ((and t (detection-block? t)) (set! max-spd (min max-spd (max-speed t))) max-spd)
+                (t (set! max-spd (min max-spd (max-speed t))) (calculate-iter (schedule-rest schedule)))
                 (else (error "Could't calulate max speed.")))))
           
           (calculate-iter schedule)))
 
       (cond
         ((<= (length schedule) 2) 0)
-        ((and (eq? ((fetch-track rwm (current-node schedule) (next-node schedule)) 'get-type) 'detection-block) (not (get-track-sign (find-next-db (schedule-rest schedule))))) 0)
-        (else (* (calculate-train-speed-direction (current-node schedule) (next-node schedule)) (min (calculate-track-max-speed) (train 'get-max-speed)))))))
+        ((and (detection-block? (fetch-track rwm (current-node schedule) (next-node schedule))) (not (get-track-sign (find-next-db (schedule-rest schedule))))) 0)
+        (else (* (calculate-train-speed-direction (current-node schedule) (next-node schedule)) (min (calculate-track-max-speed) (max-speed train)))))))
 
   (define (process-train NMBS train)
-    (let ([schedule ((NMBS 'get-schedule) (train 'get-id))])
+    (let ([schedule (get-train-schedule NMBS (id train))])
       (if (null? schedule)
-          (set-loco-speed! (train 'get-id) 0)
-          (set-loco-speed! (train 'get-id) (calculate-train-speed NMBS train)))))
+          (set-loco-speed! (id train) 0)
+          (set-loco-speed! (id train) (calculate-train-speed NMBS train)))))
 
   (define (get-train-location id)
     (get-loco-detection-block id))

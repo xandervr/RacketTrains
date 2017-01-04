@@ -3,9 +3,67 @@
 (provide current-node
          next-node
          second-node
-         schedule-rest)
+         schedule-rest
+         type
+         max-speed
+         detection-block?
+         track?
+         switch?
+         id
+         get-train-schedule
+         set-train-schedule!
+         schedule
+         node-a
+         node-b
+         free?
+         free!
+         occupy!
+         get-train-schedule
+         get-train-location
+         get-train-speed
+         set-switch-state!
+         get-switch-state)
 
 (define current-node car)
 (define next-node cadr)
 (define second-node caddr)
 (define schedule-rest cdr)
+(define (type obj)
+  (obj 'get-type))
+(define (max-speed obj)
+  (obj 'get-max-speed))
+(define (detection-block? obj)
+  (eq? (type obj) 'detection-block))
+(define (track? obj)
+  (eq? (type obj) 'track))
+(define (switch? obj)
+  (eq? (type obj) 'switch))
+(define (id obj)
+  (obj 'get-id))
+(define (get-train-schedule NMBS id)
+  ((NMBS 'get-schedule) id))
+(define (set-train-schedule! train schedule)
+  ((train 'set-schedule!) schedule))
+(define (schedule train)
+  (train 'get-schedule))
+(define (node-a track)
+  (track 'get-nodeA))
+(define (node-b track)
+  (track 'get-nodeB))
+(define (free? obj [id #f])
+  ((obj 'free?) id))
+(define (free! obj)
+  (obj 'free!))
+(define (occupy! obj id)
+  ((obj 'occupy!) id))
+(define (get-train-location infrabel id)
+  ((infrabel 'get-train-location) id))
+(define (get-train-speed infrabel id)
+  ((infrabel 'get-train-speed) id))
+(define (set-switch-state! infrabel id pos)
+  ((infrabel 'set-switch-state!) id pos))
+(define (get-switch-state infrabel id)
+  ((infrabel 'get-switch-state) id))
+
+
+
