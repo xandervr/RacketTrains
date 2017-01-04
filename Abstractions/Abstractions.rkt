@@ -33,9 +33,9 @@
          set-switch-state!
          get-switch-state)
 
-(define railway "railway-new.txt")
+(define railway "railway-big.txt")
 (define train-placeholder "L1")
-(define schedule-placeholder "N3 N4 N5 N6 N7 N9 N10")
+(define schedule-placeholder "A13 A12 A11 A9 A8")
 (define ... void)
 (define current-node car)
 (define next-node cadr)
