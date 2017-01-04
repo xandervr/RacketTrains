@@ -69,10 +69,10 @@
 
 
 (define (fetch-track rwm nA nB)
-  (define db (hash-ref (rwm-ds rwm) (find-db rwm nA nB) (lambda () #f)))
-  (define t (find-track rwm nA nB))
-  (define s (hash-ref (rwm-ss rwm) (find-s rwm nA nB) (lambda () #f)))
-  (or db t s))
+  (let ([db (hash-ref (rwm-ds rwm) (find-db rwm nA nB) (lambda () #f))]
+        [t (find-track rwm nA nB)]
+        [s (hash-ref (rwm-ss rwm) (find-s rwm nA nB) (lambda () #f))])
+    (or db t s)))
 
 (define (track-eqv? t1 t2)
   (or (and (eqv? (t1 'get-nodeA) (t2 'get-nodeA))
@@ -81,30 +81,30 @@
            (eqv? (t1 'get-nodeB) (t2 'get-nodeA)))))
 
 (define (find-track rwm n1 n2)
-  (define track (findf (lambda (t2)
-   (let ([t1 (make-track n1 n2)])
-     (track-eqv? t1 t2)))
-  (rwm-ts rwm)))
-  track)
+  (let ([track (findf (lambda (t2)
+                        (let ([t1 (make-track n1 n2)])
+                          (track-eqv? t1 t2)))
+                      (rwm-ts rwm))])
+    track))
 
 (define (find-db rwm n1 n2)
-  (define d #f)
-  (hash-for-each (rwm-ds rwm) 
-    (lambda (id detection-block) 
-      (let   ([t1 (make-track n1 n2)]
-        [t2 (detection-block 'get-track)])
-      (when (track-eqv? t1 t2)
-        (set! d (detection-block 'get-id))))))
-  d)
+  (let ([d #f])
+    (hash-for-each (rwm-ds rwm) 
+                   (lambda (id detection-block) 
+                     (let   ([t1 (make-track n1 n2)]
+                             [t2 (detection-block 'get-track)])
+                       (when (track-eqv? t1 t2)
+                         (set! d (detection-block 'get-id))))))
+    d))
 
 (define (find-s rwm n1 n2)
-  (define s #f)
-  (hash-for-each (rwm-ss rwm) 
-    (lambda (id switch) 
-      (let   ([t1 (make-track n1 n2)]
-              [t2 (make-track (switch 'get-nodeA) (switch 'get-nodeB))]
-              [t3 (make-track (switch 'get-nodeA) (switch 'get-nodeC))])
-      (when (or (track-eqv? t1 t2) (track-eqv? t1 t3))
-        (set! s (switch 'get-id))))))
-  s)
+  (let ([s #f])
+    (hash-for-each (rwm-ss rwm) 
+                   (lambda (id switch) 
+                     (let   ([t1 (make-track n1 n2)]
+                             [t2 (make-track (switch 'get-nodeA) (switch 'get-nodeB))]
+                             [t3 (make-track (switch 'get-nodeA) (switch 'get-nodeC))])
+                       (when (or (track-eqv? t1 t2) (track-eqv? t1 t3))
+                         (set! s (switch 'get-id))))))
+    s))
 

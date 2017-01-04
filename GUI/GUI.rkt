@@ -65,36 +65,36 @@
 
 
     (define (redraw!)
-      (define i 0)
-      (hash-for-each
-       (rwm-ls rwm)
-       (lambda (id train)
-         (send (list-ref labels i)
-               set-label
-               (~a (train 'get-id) ": " ((infrabel 'get-train-location) (train 'get-id)) " Speed: " ((infrabel 'get-train-speed) (train 'get-id)) " Max-speed: "
-                (((hash-ref (rwm-ds rwm) ((infrabel 'get-train-location) (train 'get-id))
-                            (lambda ()
-                              (lambda (x)
-                                (lambda (x) #f)))) 'get-track) 'get-max-speed)))
-         (set! i (+ i 1))))
-      (for-each
-       (lambda (track)
-         (send (list-ref labels i) set-label
-               (~a "T (" (track 'get-nodeA) ", " (track 'get-nodeB) "): " ((NMBS 'track-free?) (track 'get-nodeA) (track 'get-nodeB)) " Max-speed: " (track 'get-max-speed)))
-         (set! i (+ i 1)))
-       (rwm-ts rwm))
-      (hash-for-each
-       (rwm-ds rwm)
-       (lambda (id db)
-         (send (list-ref labels i) set-label
-               (~a (db 'get-id) " (" (db 'get-nodeA) ", " (db 'get-nodeB) "): " ((NMBS 'track-free?) ((db 'get-track) 'get-nodeA) ((db 'get-track) 'get-nodeB)) " Max-speed: " ((db 'get-track) 'get-max-speed) " Sign: " ((infrabel 'get-track-sign) (db 'get-id))))
-         (set! i (+ i 1))))
-      (hash-for-each
-       (rwm-ss rwm)
-       (lambda (id ss)
-         (send (list-ref labels i) set-label
-               (~a (ss 'get-id) " (" (ss 'get-nodeA) ", " (ss 'get-nodeB) ", " (ss 'get-nodeC) "): " ((NMBS 'track-free?) (ss 'get-nodeA) (ss 'get-nodeB)) " State: " ((infrabel 'get-switch-state) (ss 'get-id)) " Max-speed: " (ss 'get-max-speed)))
-         (set! i (+ i 1)))))
+      (let ([i 0])
+        (hash-for-each
+         (rwm-ls rwm)
+         (lambda (id train)
+           (send (list-ref labels i)
+                 set-label
+                 (~a (train 'get-id) ": " ((infrabel 'get-train-location) (train 'get-id)) " Speed: " ((infrabel 'get-train-speed) (train 'get-id)) " Max-speed: "
+                     (((hash-ref (rwm-ds rwm) ((infrabel 'get-train-location) (train 'get-id))
+                                 (lambda ()
+                                   (lambda (x)
+                                     (lambda (x) #f)))) 'get-track) 'get-max-speed)))
+           (set! i (+ i 1))))
+        (for-each
+         (lambda (track)
+           (send (list-ref labels i) set-label
+                 (~a "T (" (track 'get-nodeA) ", " (track 'get-nodeB) "): " ((NMBS 'track-free?) (track 'get-nodeA) (track 'get-nodeB)) " Max-speed: " (track 'get-max-speed)))
+           (set! i (+ i 1)))
+         (rwm-ts rwm))
+        (hash-for-each
+         (rwm-ds rwm)
+         (lambda (id db)
+           (send (list-ref labels i) set-label
+                 (~a (db 'get-id) " (" (db 'get-nodeA) ", " (db 'get-nodeB) "): " ((NMBS 'track-free?) ((db 'get-track) 'get-nodeA) ((db 'get-track) 'get-nodeB)) " Max-speed: " ((db 'get-track) 'get-max-speed) " Sign: " ((infrabel 'get-track-sign) (db 'get-id))))
+           (set! i (+ i 1))))
+        (hash-for-each
+         (rwm-ss rwm)
+         (lambda (id ss)
+           (send (list-ref labels i) set-label
+                 (~a (ss 'get-id) " (" (ss 'get-nodeA) ", " (ss 'get-nodeB) ", " (ss 'get-nodeC) "): " ((NMBS 'track-free?) (ss 'get-nodeA) (ss 'get-nodeB)) " State: " ((infrabel 'get-switch-state) (ss 'get-id)) " Max-speed: " (ss 'get-max-speed)))
+           (set! i (+ i 1))))))
 
     (define (dispatch msg)
       (cond
