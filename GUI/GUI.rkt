@@ -31,7 +31,7 @@
           (new button% [parent new-panel]
                [label "Load"]
                [callback (lambda (button event)
-                           (let ([schedule (map (lambda (x) (string->symbol x)) (string-split (get-text-from-user "Load schedule" "Schedule:" #f "A1 A2 A3 A4 A5 A6 A7 A8 A9" null)))])
+                           (let ([schedule (map (lambda (x) (string->symbol x)) (string-split (get-text-from-user "Load schedule" "Schedule:" #f schedule-placeholder null)))])
                             (insert-schedule! NMBS train-id schedule)
                             (send schedule-msg set-label (~a schedule))))]))
         (set! labels (cons label labels))

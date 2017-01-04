@@ -1,6 +1,9 @@
 #lang racket
 
 (provide railway
+         train-placeholder
+         schedule-placeholder
+         ...
          current-node
          next-node
          second-node
@@ -31,6 +34,9 @@
          get-switch-state)
 
 (define railway "railway-new.txt")
+(define train-placeholder "L1")
+(define schedule-placeholder "N3 N4 N5 N6 N7 N9 N10")
+(define ... void)
 (define current-node car)
 (define next-node cadr)
 (define second-node caddr)

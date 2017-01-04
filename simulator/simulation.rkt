@@ -33,7 +33,7 @@
   (when running?
     (error "Simulation is already running."))
   (set! running? #t)
-  (set! model (load-rwm "railway.txt"))
+  (set! model (load-rwm "railway-new.txt"))
   (set! current-thread
         (thread simul-loop)))
 
