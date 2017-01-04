@@ -84,10 +84,8 @@
 
     (define (schedule-train) ;prompt and process
       (let* ([train-id    (string->symbol (get-text-from-user "Add schedule" "Train ID" #f train-placeholder null))]
-             [route (get-text-from-user "Add schedule" "Route" #f schedule-placeholder null)]
-             [schedule (map (lambda (x) (string->symbol x))
-                                (string-split route))])
-        (insert-schedule! NMBS train-id schedule)))
+             [to-node (string->symbol (get-text-from-user "Add destination" "Destination" #f schedule-placeholder null))])
+        (NMBS-drive-to! NMBS train-id to-node)))
 
     (define (dispatch msg)
       (cond 

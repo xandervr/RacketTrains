@@ -18,6 +18,7 @@
          get-train-schedule
          set-train-schedule!
          insert-schedule!
+         NMBS-drive-to!
          schedule
          node-a
          node-b
@@ -63,6 +64,8 @@
   (train 'get-schedule))
 (define (insert-schedule! NMBS id schedule)
   ((NMBS 'add-schedule!) id schedule))
+(define (NMBS-drive-to! NMBS id node)
+  ((NMBS 'drive-to!) id node))
 (define (node-a track)
   (track 'get-nodeA))
 (define (node-b track)

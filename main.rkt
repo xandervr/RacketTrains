@@ -9,21 +9,17 @@
 (require "control-systems/NMBS.rkt")
 (require "GUI/GUI.rkt")
 (require "GUI/GUI-Advanced.rkt")
-(require "Graphs/graph-calculation.rkt")
 
 
 (define (RacketTrains)
   (let* 
     ([infrabel  (make-infrabel)]
-     [NMBS  (make-NMBS)]
+     [NMBS  (make-NMBS infrabel)]
      [GUI-log (make-GUI-log "RacketTrains Log" infrabel NMBS)]
-     [GUI-adv (make-GUI-adv "RacketTrains" infrabel NMBS)]
-     [graph-calculation (make-graph-calculation)])
-
-    ((graph-calculation 'calculate-shortest-path) 'A1 'A13)
+     [GUI-adv (make-GUI-adv "RacketTrains" infrabel NMBS)])
     
     (define (loop)
-      ((NMBS 'update) infrabel)
+      (NMBS 'update)
       ((infrabel 'update) NMBS)
       (GUI-log 'redraw!)
       (GUI-adv 'redraw!)

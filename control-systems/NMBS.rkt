@@ -7,11 +7,13 @@
 
 (require "../railwaymodel/rwm.rkt")
 (require "../Abstractions/Abstractions.rkt")
+(require "../Graphs/graph-calculation.rkt")
 
 (provide  make-NMBS)
 
-(define (make-NMBS)
-  (let ([rwm (load-rwm railway)])
+(define (make-NMBS infrabel)
+  (let ([rwm (load-rwm railway)]
+        [graph-calculation (make-graph-calculation)])
 
   (define (print-rail-status)
     (for-each
@@ -21,7 +23,7 @@
                    (lambda (id ds)
                      (printf "Db: ~a ~a\n" id (free? ds)))))
 
-  (define (update infrabel)
+  (define (update)
     ;(print-rail-status)
     (hash-for-each (rwm-ls rwm) 
                    (lambda (id train) 
@@ -89,14 +91,20 @@
   ; GRAPHS
   ;
 
+  (define (drive-to! train-id node)
+    (let* ([location (hash-ref (rwm-ds rwm) (get-train-location infrabel train-id) (lambda () #f))]
+           [path ((graph-calculation 'calculate-shortest-path) (node-a location) node)])
+      (printf "~a\n" path)
+      (add-schedule! train-id path)))
 
 
   (define (dispatch msg)
     (cond
+      ((eq? msg 'drive-to!) drive-to!)
       ((eq? msg 'add-schedule!) add-schedule!)
       ((eq? msg 'get-schedule) get-schedule)
       ((eq? msg 'track-free?) track-free?)
-      ((eq? msg 'update) update)))
+      ((eq? msg 'update) (update))))
 
   dispatch))
 
