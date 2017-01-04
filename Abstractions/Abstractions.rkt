@@ -10,11 +10,14 @@
          track?
          switch?
          id
+         track
          get-train-schedule
          set-train-schedule!
+         insert-schedule!
          schedule
          node-a
          node-b
+         node-c
          free?
          free!
          occupy!
@@ -40,16 +43,22 @@
   (eq? (type obj) 'switch))
 (define (id obj)
   (obj 'get-id))
+(define (track db)
+  (db 'get-track))
 (define (get-train-schedule NMBS id)
   ((NMBS 'get-schedule) id))
 (define (set-train-schedule! train schedule)
   ((train 'set-schedule!) schedule))
 (define (schedule train)
   (train 'get-schedule))
+(define (insert-schedule! NMBS id schedule)
+  ((NMBS 'add-schedule!) id schedule))
 (define (node-a track)
   (track 'get-nodeA))
 (define (node-b track)
   (track 'get-nodeB))
+(define (node-c switch)
+  (switch 'get-nodeC))
 (define (free? obj [id #f])
   ((obj 'free?) id))
 (define (free! obj)
