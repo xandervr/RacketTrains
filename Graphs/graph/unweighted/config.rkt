@@ -21,6 +21,6 @@
          (rnrs control)
          (rnrs mutable-pairs)
          ;(a-d graph unweighted adjacency-matrix)
-         (a-d graph unweighted adjacency-list)
+         (Graphs graph unweighted adjacency-list)
          )
  )

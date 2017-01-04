@@ -7,12 +7,11 @@
 
 (require "../railwaymodel/rwm.rkt")
 (require "../Abstractions/Abstractions.rkt")
-(require "../Graphs/graph/weighted/config.rkt")
 
 (provide  make-NMBS)
 
 (define (make-NMBS)
-  (define rwm (load-rwm railway))
+  (let ([rwm (load-rwm railway)])
 
   (define (print-rail-status)
     (for-each
@@ -86,6 +85,12 @@
     (let ([t (fetch-track rwm nA nB)])
       (t 'occupied?)))
 
+  ;
+  ; GRAPHS
+  ;
+
+
+
   (define (dispatch msg)
     (cond
       ((eq? msg 'add-schedule!) add-schedule!)
@@ -93,5 +98,5 @@
       ((eq? msg 'track-free?) track-free?)
       ((eq? msg 'update) update)))
 
-  dispatch)
+  dispatch))
 

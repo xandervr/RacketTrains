@@ -1,5 +1,10 @@
 #lang racket/gui
 
+;
+; NMBS ADT
+; Copyright © 2016 Xander Van Raemdonck 2BA CW
+;
+
 (provide make-GUI-adv)
 
 (require "../railwaymodel/rwm.rkt")

@@ -16,8 +16,8 @@
  (basic algorithms)
  (export shortest-path distance)
  (import (rnrs base)
-         (a-d graph unweighted config)
-         (a-d graph-traversing bft))
+         (Graphs graph unweighted config)
+         (Graphs graph-traversing bft))
  
  (define (shortest-path g from to)
    (define paths (make-vector (order g) '()))

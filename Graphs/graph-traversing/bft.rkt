@@ -17,8 +17,8 @@
  (export bft node-nop edge-nop root-nop)
  (import (rnrs base)
          (rnrs control)
-         (prefix (a-d queue linked) q:)
-         (a-d graph unweighted config))
+         (prefix (Graphs queue linked) q:)
+         (Graphs graph unweighted config))
  
  (define (bft graph 
               root-discovered
