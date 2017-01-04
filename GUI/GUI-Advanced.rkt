@@ -51,19 +51,27 @@
                     "black" 2 'solid 'round))))
 
     (define (draw-switch switch canvas dc)
-      (let* ([nA   (hash-ref (rwm-ns rwm) (node-a switch))]
-             [nB    (hash-ref (rwm-ns rwm) (node-b switch))]
-             [nC    (hash-ref (rwm-ns rwm) (node-c switch))]
-             [x1        (get-x nA)]
-             [y1        (get-y nA)]
-             [x2        (get-x nB)]
-             [y2        (get-y nB)]
-             [x3        (get-x nC)]
-             [y3        (get-y nC)])
-            (send dc draw-line x1 y1 x2 y2)
-            (send dc draw-line x1 y1 x3 y3)))
+      (let* ([nA  (hash-ref (rwm-ns rwm) (node-a switch))]
+             [nB  (hash-ref (rwm-ns rwm) (node-b switch))]
+             [nC  (hash-ref (rwm-ns rwm) (node-c switch))]
+             [sid (id switch)]
+             [nM  (hash-ref (rwm-ns rwm) sid)]
+             [pos (get-switch-state infrabel sid)]
+             [x1  (get-x nA)]
+             [y1  (get-y nA)]
+             [x2  (get-x nB)]
+             [y2  (get-y nB)]
+             [x3  (get-x nC)]
+             [y3  (get-y nC)]
+             [x4  (get-x nM)]
+             [y4  (get-y nM)])
+            (send dc draw-line x1 y1 x4 y4)
+            (if (= pos 1)
+              (send dc draw-line x4 y4 x2 y2)
+              (send dc draw-line x4 y4 x3 y3))))
 
     (define (draw-canvas canvas dc)
+      (send dc erase)
       (send canvas set-canvas-background (make-object color% 255 255 255))
       (hash-for-each (rwm-ds rwm) (lambda (id db) (draw-detection-block db canvas dc)))
       (for-each (lambda (t) (draw-track t canvas dc)) (rwm-ts rwm))
