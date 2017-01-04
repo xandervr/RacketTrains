@@ -7,6 +7,7 @@
 
 (require "../railwaymodel/rwm.rkt")
 (require "../Abstractions/Abstractions.rkt")
+(require "../Graphs/graph/weighted/config.rkt")
 
 (provide  make-NMBS)
 

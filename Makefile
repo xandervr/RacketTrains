@@ -1,0 +1,5 @@
+TARGET=main.rkt
+COLLECTIONPATH="."
+
+all:
+	racket -S $(COLLECTIONPATH) $(TARGET)
