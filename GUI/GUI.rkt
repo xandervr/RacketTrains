@@ -30,7 +30,7 @@
           (new button% [parent new-panel]
                [label "Load"]
                [callback (lambda (button event)
-                           (let ([schedule (map (lambda (x) (string->symbol x)) (string-split (get-text-from-user "Load schedule" "Schedule:")))])
+                           (let ([schedule (map (lambda (x) (string->symbol x)) (string-split (get-text-from-user "Load schedule" "Schedule:" #f "A1 A2 A3 A4 A5 A6 A7 A8 A9" null)))])
                             ((NMBS 'add-schedule!) train-id schedule)
                             (send schedule-msg set-label (~a schedule))))]))
         (set! labels (cons label labels))
@@ -87,7 +87,7 @@
        (rwm-ds rwm)
        (lambda (id db)
          (send (list-ref labels i) set-label
-               (~a (db 'get-id) " (" (db 'get-nodeA) ", " (db 'get-nodeB) "): " ((NMBS 'track-free?) ((db 'get-track) 'get-nodeA) ((db 'get-track) 'get-nodeB)) " Max-speed: " ((db 'get-track) 'get-max-speed)))
+               (~a (db 'get-id) " (" (db 'get-nodeA) ", " (db 'get-nodeB) "): " ((NMBS 'track-free?) ((db 'get-track) 'get-nodeA) ((db 'get-track) 'get-nodeB)) " Max-speed: " ((db 'get-track) 'get-max-speed) " Sign: " ((infrabel 'get-track-sign) (db 'get-id))))
          (set! i (+ i 1))))
       (hash-for-each
        (rwm-ss rwm)

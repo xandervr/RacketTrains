@@ -17,6 +17,22 @@
   (define (update NMBS)
     (hash-for-each (rwm-ls rwm) (lambda (id train) (process-train NMBS train))))
 
+  (define (get-track-sign db-id) ; #f = red #t = green
+    (let ([sign #t])
+      (hash-for-each (rwm-ls rwm)
+        (lambda (id train)
+          (when (eq? (get-train-location id) db-id)
+            (set! sign #f))))
+      sign))
+
+  (define (find-next-db schedule)
+      (let 
+        ([track (fetch-track rwm (car schedule) (cadr schedule))])
+        (cond
+          ((null? (cdr schedule)) #f)
+          ((eq? (track 'get-type) 'detection-block) (track 'get-id))
+          (else (find-next-db (cdr schedule))))))
+
   (define (calculate-train-speed-direction nA nB)
     (define t (fetch-track rwm nA nB))
     (if (eq? (t 'get-nodeA) nA)
@@ -39,9 +55,12 @@
             (else (error "Could't calulate max speed."))))
         (calculate-iter schedule)))
 
+
+
     (let ((location (get-loco-detection-block (train 'get-id))))
       (cond
         ((<= (length schedule) 2) 0)
+        ((and (eq? ((fetch-track rwm (car schedule) (cadr schedule)) 'get-type) 'detection-block) (not (get-track-sign (find-next-db (cdr schedule))))) 0)
         (else (* (calculate-train-speed-direction (car schedule) (cadr schedule)) (min (calculate-track-max-speed) (train 'get-max-speed)))))))
 
   (define (process-train NMBS train)
@@ -66,6 +85,7 @@
   (define (dispatch msg)
     (cond
       ((eq? msg 'update)  update)
+      ((eq? msg 'get-track-sign) get-track-sign)
       ((eq? msg 'get-train-location) get-train-location)
       ((eq? msg 'get-train-speed) get-train-speed)
       ((eq? msg 'get-switch-state) get-switch-state)
