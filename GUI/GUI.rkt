@@ -8,9 +8,9 @@
 (require "../railwaymodel/rwm.rkt")
 (require "../Abstractions/Abstractions.rkt")
 
-(provide make-GUI)
+(provide make-GUI-log)
 
-(define (make-GUI title infrabel NMBS)
+(define (make-GUI-log title infrabel NMBS)
   (let* 
       ([frame (new frame% [label title])]
        [panel (new horizontal-panel% [parent frame])]
