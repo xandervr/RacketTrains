@@ -14,7 +14,7 @@
   (let* 
       ([frame (new frame% [label title])]
        [panel (new horizontal-panel% [parent frame])]
-       [rwm (load-rwm "railway.txt")]
+       [rwm (load-rwm railway)]
        [labels '()]
        [panels '()])
 

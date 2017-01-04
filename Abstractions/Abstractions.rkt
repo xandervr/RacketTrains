@@ -1,6 +1,7 @@
 #lang racket
 
-(provide current-node
+(provide railway
+         current-node
          next-node
          second-node
          schedule-rest
@@ -18,6 +19,8 @@
          node-a
          node-b
          node-c
+         get-x
+         get-y
          free?
          free!
          occupy!
@@ -27,6 +30,7 @@
          set-switch-state!
          get-switch-state)
 
+(define railway "railway-new.txt")
 (define current-node car)
 (define next-node cadr)
 (define second-node caddr)
@@ -59,6 +63,10 @@
   (track 'get-nodeB))
 (define (node-c switch)
   (switch 'get-nodeC))
+(define (get-x node)
+  (node 'get-x))
+(define (get-y node)
+  (node 'get-y))
 (define (free? obj [id #f])
   ((obj 'free?) id))
 (define (free! obj)

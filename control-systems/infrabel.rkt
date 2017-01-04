@@ -11,7 +11,7 @@
 (provide make-infrabel)
 
 (define (make-infrabel)
-  (define rwm (load-rwm "railway.txt"))
+  (define rwm (load-rwm railway))
 
   (define (update NMBS)
     (hash-for-each (rwm-ls rwm) (lambda (id train) (process-train NMBS train))))

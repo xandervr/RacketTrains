@@ -11,7 +11,7 @@
 (provide  make-NMBS)
 
 (define (make-NMBS)
-  (define rwm (load-rwm "railway.txt"))
+  (define rwm (load-rwm railway))
 
   (define (print-rail-status)
     (for-each
