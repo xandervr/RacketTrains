@@ -2,4 +2,4 @@ TARGET=main.rkt
 COLLECTIONPATH="."
 
 all:
-	racket -S $(COLLECTIONPATH) $(TARGET)
+	clear; racket -S $(COLLECTIONPATH) $(TARGET)
