@@ -18,16 +18,15 @@
         (set! occupied train-id))
 
     (define (free? [train-id #f])
-      (if (not occupied)
-        #t
-        occupied))
+      (not occupied))
 
     (define (dispatch msg)
       (cond
         ((eq? msg 'get-type)    type)
         ((eq? msg 'get-nodeA)   nodeA)
         ((eq? msg 'get-nodeB)   nodeB)
-        ((eq? msg 'free?)   free?)
+        ((eq? msg 'occupied?)   occupied)
+        ((eq? msg 'free?) free?)
         ((eq? msg 'free!)   (free!))
         ((eq? msg 'occupy!) occupy!)
         ((eq? msg 'get-max-speed) max-speed)

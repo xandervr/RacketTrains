@@ -18,10 +18,9 @@
     (define (occupy! train-id)
         (set! occupied train-id))
 
+
     (define (free? [train-id #f])
-      (if (not occupied)
-        #t
-        occupied))
+      (not occupied))
 
     (define (switch!)
       (if (= position 1)
@@ -45,6 +44,7 @@
         ((eq? msg 'get-nodeB)   nodeB)
         ((eq? msg 'get-nodeC)   nodeC)
         ((eq? msg 'free?) free?)
+        ((eq? msg 'occupied?) occupied)
         ((eq? msg 'free!) (free!))
         ((eq? msg 'occupy!) occupy!)
         ((eq? msg 'get-position) position)

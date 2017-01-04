@@ -20,7 +20,8 @@
         ((track 'occupy!) train-id))
 
     (define (free? [train-id #f])
-        ((track 'free?) train-id))
+        (not (track 'occupied?)))
+
 
     (define (dispatch msg)
       (cond
@@ -30,6 +31,7 @@
         ((eq? msg 'get-nodeA)   (track 'get-nodeA))
         ((eq? msg 'get-nodeB)   (track 'get-nodeB))
         ((eq? msg 'get-max-speed) (track 'get-max-speed))
+        ((eq? msg 'occupied?) (track 'occupied?))
         ((eq? msg 'free?) free?)
         ((eq? msg 'free!)   (free!))
         ((eq? msg 'occupy!) occupy!)

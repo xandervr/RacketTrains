@@ -32,10 +32,17 @@
       (define (occupy-next-track)
         (let ([schedule (train 'get-schedule)])
 
-          (define (set-switch switch schedule-next)
-            (if (eq? schedule-next (switch 'get-nodeB))
-                ((infrabel 'set-switch-state!) (switch 'get-id) 1)
-              ((infrabel 'set-switch-state!) (switch 'get-id) 2)))
+          (define (set-switch switch nA nB)
+            (cond
+              ((eq? nA (switch 'get-nodeA))
+                (if (eq? nB (switch 'get-nodeB))
+                  ((infrabel 'set-switch-state!) (switch 'get-id) 1)
+                  ((infrabel 'set-switch-state!) (switch 'get-id) 2)))
+              ((eq? nB (switch 'get-nodeA))
+                (if (eq? nA (switch 'get-nodeB))
+                  ((infrabel 'set-switch-state!) (switch 'get-id) 1)
+                  ((infrabel 'set-switch-state!) (switch 'get-id) 2)))
+              (else (error "set-switch ---- NMBS"))))
 
           (when (> (length (cdr schedule)) 1)
             (define (process-next-track schedule free-tracks)
@@ -47,7 +54,7 @@
                       ((t-db 'occupy!) (train 'get-id)))
                        (cons t free-tracks))))
                 (t (when ((t 'free?) (train 'get-id))
-                    (when (eq? (t 'get-type) 'switch) (set-switch t (cadr schedule)))
+                    (when (eq? (t 'get-type) 'switch) (set-switch t (car schedule) (cadr schedule)))
                     (process-next-track (cdr schedule) (cons t free-tracks))))
                 (else (error "OCCUPYERROR"))))
 
@@ -77,9 +84,7 @@
 
   (define (track-free? nA nB)
     (define t (fetch-track rwm nA nB))
-    (cond
-      (t ((t 'free?)))
-      (else #f)))
+    (t 'occupied?))
 
   (define (dispatch msg)
     (cond

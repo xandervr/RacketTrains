@@ -17,6 +17,12 @@
   (define (update NMBS)
     (hash-for-each (rwm-ls rwm) (lambda (id train) (process-train NMBS train))))
 
+  (define (calculate-train-speed-direction nA nB)
+    (define t (fetch-track rwm nA nB))
+    (if (eq? (t 'get-nodeA) nA)
+      +1
+      -1))
+
   (define (calculate-train-speed NMBS train)
     (define schedule ((NMBS 'get-schedule) (train 'get-id)))
 
@@ -35,11 +41,12 @@
 
     (let ((location (get-loco-detection-block (train 'get-id))))
       (cond
-        ((= (length schedule) 2) 0)
-        (else (min (calculate-track-max-speed) (train 'get-max-speed))))))
+        ((<= (length schedule) 2) 0)
+        (else (* (calculate-train-speed-direction (car schedule) (cadr schedule)) (min (calculate-track-max-speed) (train 'get-max-speed)))))))
 
   (define (process-train NMBS train)
     (define schedule ((NMBS 'get-schedule) (train 'get-id)))
+    
     (if (null? schedule)
       (set-loco-speed! (train 'get-id) 0)
       (set-loco-speed! (train 'get-id) (calculate-train-speed NMBS train))))
