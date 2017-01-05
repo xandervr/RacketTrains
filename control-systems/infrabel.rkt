@@ -66,7 +66,7 @@
                   (if (= (get-switch-state (id t)) 1) 1 2)
                   (if (= (get-switch-state (id t)) 2) 2 1)))
 
-              (when (and t (switch? t)) (set-switch-state! (id t) (find-right-switch-position))))
+              (when (and t (switch? t)) (set-switch-state! (id t) (find-right-switch-position)))))
           
           (calculate-swith-position)
           (calculate-iter schedule)))
