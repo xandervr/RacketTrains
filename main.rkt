@@ -7,7 +7,7 @@
 
 (require "control-systems/infrabel.rkt")
 (require "control-systems/NMBS.rkt")
-(require "GUI/GUI.rkt")
+(require "GUI/GUI-log.rkt")
 (require "GUI/GUI-Advanced.rkt")
 
 
