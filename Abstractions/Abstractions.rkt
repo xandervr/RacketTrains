@@ -39,7 +39,7 @@
 
 (define railway "railway-big.txt")
 (define train-placeholder "L1")
-(define schedule-placeholder "A7")
+(define schedule-placeholder "D6")
 (define ... void)
 (define middle-x car)
 (define middle-y cdr)
