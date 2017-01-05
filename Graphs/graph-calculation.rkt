@@ -22,6 +22,7 @@
          [switches-hashmap (rwm-ss rwm)]
          [railwaygraph (graph:new #f nodes-count)])
 
+    ; Assign each node to a value for the graph
     (define (populate-graph-hashmap)
       (let ([i 0])
         (hash-for-each nodes-hashmap (λ (nid value)
@@ -29,27 +30,15 @@
                                        (set! i (+ i 1))))
         i))
 
+    ; Generate graph from railway model
     (define (generate-graph-from-railway)
       (populate-graph-hashmap)
       (for-each (λ (track) (add-track-to-graph (node-a track) (node-b track))) tracks-list)
       (hash-for-each db-hashmap (λ (did db) (add-track-to-graph (node-a db) (node-b db))))
       (hash-for-each switches-hashmap (λ (sid switch) (add-track-to-graph (node-a switch) (node-b switch)) (add-track-to-graph (node-a switch) (node-c switch)))))
 
-    (define (get-node-id val)
-      (let ([res #f])
-        (hash-for-each gs (λ (id value)
-                            (when (= val value)
-                              (set! res id))))
-        res))
 
-    (define (get-node-value id)
-      (hash-ref gs id (λ () #f)))
-
-    (define (convert-mcons-to-list mconslist)
-      (if (null? mconslist)
-          '()
-          (cons (mcar mconslist) (convert-mcons-to-list (mcdr mconslist)))))
-
+    ; Find the shortest route between two detection blocks
     (define (calculate-shortest-path dA dB)
       (let* ([db-start    (hash-ref (rwm-ds rwm) dA)]
              [db-end      (hash-ref (rwm-ds rwm) dB)]
@@ -73,6 +62,7 @@
         (fix-path path)))
 
 
+    ; Fix the path so that it is traversable
     (define (fix-path path)
       (let ([fixed-path '()])
 
@@ -92,7 +82,7 @@
                    (define (find-detection-block current-node previous-node)
                      (hash-for-each
                       (rwm-ns rwm)
-                      (lambda (nid n)
+                      (λ (nid n)
                         (let ([next-track (fetch-track rwm current-node nid)]
                               [current-track (fetch-track rwm previous-node current-node)])
                           (when (and next-track
@@ -112,7 +102,7 @@
                                        (find-detection-block (node-a next-track) (node-b next-track)))))))))))
 
                    (find-detection-block current-node previous-node)
-                   (for-each (lambda (n)
+                   (for-each (λ (n)
                                (set! fixed-path (cons n fixed-path)))
                              (reverse inner-path))))
 
@@ -134,6 +124,25 @@
         (reverse fixed-path)))
 
 
+    ; Get node id from graph value
+    (define (get-node-id val)
+      (let ([res #f])
+        (hash-for-each gs (λ (id value)
+                            (when (= val value)
+                              (set! res id))))
+        res))
+
+    ; Get graph value from node id
+    (define (get-node-value id)
+      (hash-ref gs id (λ () #f)))
+
+    ; Convert mcons list from BFT to a list
+    (define (convert-mcons-to-list mconslist)
+      (if (null? mconslist)
+          '()
+          (cons (mcar mconslist) (convert-mcons-to-list (mcdr mconslist)))))
+
+    ; Create graph edge
     (define (add-track-to-graph nA nB)
       (graph:add-edge! railwaygraph (get-node-value nA) (get-node-value nB)))
 
