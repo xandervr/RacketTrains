@@ -13,10 +13,10 @@
 (define (make-GUI-adv title infrabel NMBS)
   (let* ([rwm       (load-rwm railway)])
 
-    (define (change-color dc color)
+    (define (set-pen-color dc color)
       (send dc set-pen
             (send the-pen-list find-or-create-pen
-                  color 2 'solid 'round)))
+                  color 4 'solid 'round)))
         
     (define (draw-node node canvas dc)
       (let* ([x (get-x node)]
@@ -24,9 +24,9 @@
              [nid   (id node)]
              [lbl-text   (~a nid)])
         (send dc set-text-foreground "blue")
-        (send dc draw-text lbl-text (- x 5) (- y 15))
-        (change-color dc "blue")
-        (send dc draw-ellipse x y 4 4))) 
+        (send dc draw-text lbl-text (+ x 5) (+ y 5))
+        (set-pen-color dc "blue")
+        (send dc draw-ellipse (- x 4) (- y 4) 8 8))) 
 
     (define (draw-track track canvas dc)
       (let* ([nA  (hash-ref (rwm-ns rwm) (node-a track))]
@@ -40,16 +40,16 @@
              [ym (middle-y middle)]
              [max-spd (max-speed track)]
              [track-free? (NMBS-track-free? NMBS (id nA) (id nB))]
-             [lbl-text (~a "T (" max-spd "m/s")])
+             [lbl-text (~a "T (" max-spd " m/s")])
             (cond
           (track-free?
-           (change-color dc "orange")  
-           (send dc set-text-foreground "darkorange"))
+           (set-pen-color dc "cyan")  
+           (send dc set-text-foreground "darkcyan"))
           (else
-           (change-color dc "green")  
-           (send dc set-text-foreground "darkgreen")))
+           (set-pen-color dc "black")  
+           (send dc set-text-foreground "darkgray")))
         (send dc draw-line x1 y1 x2 y2)
-        (send dc draw-text lbl-text xm ym)))
+        (send dc draw-text lbl-text (+ xm 5) (+ ym 5))))
 
     (define (draw-detection-block db canvas dc)
       (let* ([nA  (hash-ref (rwm-ns rwm) (node-a db))]
@@ -64,7 +64,7 @@
              [ym (middle-y middle)]
              [max-spd (max-speed db)]
              [track-free? (NMBS-track-free? NMBS (node-a db) (node-b db))]
-             [lbl-text (~a "D: " did " (" max-spd "m/s)")]
+             [lbl-text (~a "D: " did " (" max-spd " m/s)")]
              [train  #f])
         (hash-for-each
          (rwm-ls rwm)
@@ -75,22 +75,20 @@
 
         (cond 
           (train
-           (change-color dc "red")  
+           (set-pen-color dc "red")  
            (send dc set-text-foreground "darkred"))
           (track-free?
-           (change-color dc "orange")  
-           (send dc set-text-foreground "darkorange"))
+           (set-pen-color dc "cyan")  
+           (send dc set-text-foreground "darkcyan"))
           (else
-           (change-color dc "green")  
-           (send dc set-text-foreground "darkgreen")))
+           (set-pen-color dc "black")  
+           (send dc set-text-foreground "darkgray")))
         (send dc draw-line x1 y1 x2 y2)
-        (send dc draw-text lbl-text (+ xm 3) (+ ym 3))
+        (send dc draw-text lbl-text (+ xm 6) (+ ym 6))
         (when train
           (let* ([tid train]
-                 [spd  (get-train-speed infrabel tid)]
-                 [train-lbl-text  (~a tid ": " (abs spd) "m/s")])
-            
-            (send dc draw-text train-lbl-text (+ xm 3) (+ ym 15))))))
+                 [spd  (get-train-speed infrabel tid)])
+            (send label-train-speed set-label (~a "Train speed: " (abs spd) " m/s"))))))
 
     (define (draw-switch switch canvas dc)
       (let* ([nA  (hash-ref (rwm-ns rwm) (node-a switch))]
@@ -110,16 +108,16 @@
              [track-free? (NMBS-track-free? NMBS (node-a switch) (node-b switch))])
             (cond
           (track-free?
-           (change-color dc "orange")  
-           (send dc set-text-foreground "darkorange"))
+           (set-pen-color dc "cyan")  
+           (send dc set-text-foreground "darkcyan"))
           (else
-           (change-color dc "green")  
-           (send dc set-text-foreground "darkgreen")))
+           (set-pen-color dc "black")  
+           (send dc set-text-foreground "darkgray")))
         (send dc draw-line x1 y1 x4 y4)
         (if (= pos 1)
             (send dc draw-line x4 y4 x2 y2)
             (send dc draw-line x4 y4 x3 y3))
-        (change-color dc "gray")
+        (set-pen-color dc "gray")
         (if (= pos 2)
             (send dc draw-line x4 y4 x2 y2)
             (send dc draw-line x4 y4 x3 y3))))
@@ -159,13 +157,14 @@
 
     ; initialize
     (define width (+ (calculate-width) 100))
-    (define height (+ (calculate-height) 100))
-    (define frame (new frame% [label title] [width 640] [height 480]))
+    (define height (+ (calculate-height) 50))
+    (define frame (new frame% [label title]))
+    (define canvas-panel (new horizontal-panel% [parent frame]  [min-height height] [min-width width]))
     (define button-panel (new horizontal-panel% [parent frame]))
-    (define canvas-panel (new horizontal-panel% [parent frame]  [min-height 640] [min-width 480]))
     (define canvas (new canvas% [parent canvas-panel] [paint-callback draw-canvas]))
     (define button (new button% [parent button-panel] [label "Schedule a train!"]
                                 [callback (lambda (button event) (schedule-train))]))
+    (define label-train-speed (new message% [parent button-panel] [label "Train speed: 0 m/s"]))
     (define dc (send canvas get-dc))
 
     (send frame show #t)
