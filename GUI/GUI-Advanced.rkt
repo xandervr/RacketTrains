@@ -14,6 +14,7 @@
   (let* ([rwm       (load-rwm railway)])
 
     (define (set-pen-color dc color)
+      (if (eq? color "translucent") (send dc set-alpha 0) (send dc set-alpha 1))
       (send dc set-pen
             (send the-pen-list find-or-create-pen
                   color 4 'solid 'round)))
@@ -47,7 +48,7 @@
            (send dc set-text-foreground "darkcyan"))
           (else
            (set-pen-color dc "black")  
-           (send dc set-text-foreground "darkgray")))
+           (send dc set-text-foreground "white")))
         (send dc draw-line x1 y1 x2 y2)
         (send dc draw-text lbl-text (+ xm 5) (+ ym 5))))
 
@@ -82,12 +83,13 @@
            (send dc set-text-foreground "darkcyan"))
           (else
            (set-pen-color dc "black")  
-           (send dc set-text-foreground "darkgray")))
+           (send dc set-text-foreground "white")))
         (send dc draw-line x1 y1 x2 y2)
         (send dc draw-text lbl-text (+ xm 6) (+ ym 6))
         (when train
           (let* ([tid train]
                  [spd  (get-train-speed infrabel tid)])
+            (send dc draw-bitmap bmp-train (- xm 25) (- ym 25))
             (send label-train-speed set-label (~a "Train speed: " (abs spd) " m/s"))))))
 
     (define (draw-switch switch canvas dc)
@@ -112,19 +114,19 @@
            (send dc set-text-foreground "darkcyan"))
           (else
            (set-pen-color dc "black")  
-           (send dc set-text-foreground "darkgray")))
+           (send dc set-text-foreground "white")))
         (send dc draw-line x1 y1 x4 y4)
         (if (= pos 1)
             (send dc draw-line x4 y4 x2 y2)
             (send dc draw-line x4 y4 x3 y3))
-        (set-pen-color dc "gray")
+        (set-pen-color dc "translucent")
         (if (= pos 2)
             (send dc draw-line x4 y4 x2 y2)
             (send dc draw-line x4 y4 x3 y3))))
 
     (define (draw-canvas canvas dc)
       (send dc erase)
-      (send canvas set-canvas-background (make-object color% 255 255 255))
+      (send dc draw-bitmap background 0 0)
       (hash-for-each (rwm-ds rwm) (lambda (id db) (draw-detection-block db canvas dc)))
       (for-each (lambda (t) (draw-track t canvas dc)) (rwm-ts rwm))
       (hash-for-each (rwm-ss rwm) (lambda (id s) (draw-switch s canvas dc)))
@@ -154,14 +156,23 @@
         ((eq? msg 'redraw!) (draw-canvas canvas dc))
         (else (error "Unknown message ---- GUI"))))
 
+    (define bitmap-canvas%
+      (class canvas%
+        (init-field [bitmap #f])
+        (inherit get-dc)
+        (define/override (on-paint)
+          (send (get-dc) draw-bitmap bitmap 0 0))
+        (super-new)))
 
     ; initialize
     (define width (+ (calculate-width) 100))
     (define height (+ (calculate-height) 50))
     (define frame (new frame% [label title]))
+    (define background (read-bitmap "Resources/stones.bmp"))
+    (define bmp-train (read-bitmap "Resources/train.bmp"))
     (define canvas-panel (new horizontal-panel% [parent frame]  [min-height height] [min-width width]))
     (define button-panel (new horizontal-panel% [parent frame]))
-    (define canvas (new canvas% [parent canvas-panel] [paint-callback draw-canvas]))
+    (define canvas (new bitmap-canvas% [parent canvas-panel] [paint-callback draw-canvas] [bitmap background]))
     (define button (new button% [parent button-panel] [label "Schedule a train!"]
                                 [callback (lambda (button event) (schedule-train))]))
     (define label-train-speed (new message% [parent button-panel] [label "Train speed: 0 m/s"]))
