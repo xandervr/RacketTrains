@@ -30,8 +30,8 @@
                                               [min-width 200]))
           (new button% [parent new-panel]
                [label "Load"]
-               [callback (lambda (button event)
-                           (let ([schedule (map (lambda (x) (string->symbol x)) (string-split (get-text-from-user "Load schedule" "Schedule:" #f schedule-placeholder null)))])
+               [callback (λ (button event)
+                           (let ([schedule (map (λ (x) (string->symbol x)) (string-split (get-text-from-user "Load schedule" "Schedule:" #f schedule-placeholder null)))])
                             (insert-schedule! NMBS train-id schedule)
                             (send schedule-msg set-label (~a schedule))))]))
         (set! labels (cons label labels))
@@ -40,23 +40,23 @@
 
     (hash-for-each
      (rwm-ls rwm)
-     (lambda (tid train)
+     (λ (tid train)
        (add-label!
         (~a tid ": " (get-train-location infrabel tid))
         tid)))
     (for-each
-     (lambda (track)
+     (λ (track)
        (add-label!
         (~a "(" (node-a track) ", " (node-b track) "): " ((NMBS 'track-free?) (node-a track) (node-b track)))))
      (rwm-ts rwm))
     (hash-for-each
      (rwm-ds rwm)
-     (lambda (did db)
+     (λ (did db)
        (add-label!
         (~a did ": " ((NMBS 'track-free?) (node-a (track db)) (node-b (track db)))))))
     (hash-for-each
      (rwm-ss rwm)
-     (lambda (sid ss)
+     (λ (sid ss)
        (add-label!
         (~a sid ": " (get-switch-state infrabel sid)))))
 
@@ -69,30 +69,30 @@
       (let ([i 0])
         (hash-for-each
          (rwm-ls rwm)
-         (lambda (tid train)
+         (λ (tid train)
            (send (list-ref labels i)
                  set-label
                  (~a tid ": " (get-train-location infrabel tid) " Speed: " (get-train-speed infrabel tid) " Max-speed: "
                      (max-speed (track (hash-ref (rwm-ds rwm) (get-train-speed infrabel tid)
-                                 (lambda ()
-                                   (lambda (x)
-                                     (lambda (x) #f))))))))
+                                 (λ ()
+                                   (λ (x)
+                                     (λ (x) #f))))))))
            (set! i (+ i 1))))
         (for-each
-         (lambda (track)
+         (λ (track)
            (send (list-ref labels i) set-label
                  (~a "T (" (node-a track) ", " (node-b track) "): " ((NMBS 'track-free?) (node-a track) (node-b track)) " Max-speed: " (max-speed track)))
            (set! i (+ i 1)))
          (rwm-ts rwm))
         (hash-for-each
          (rwm-ds rwm)
-         (lambda (did db)
+         (λ (did db)
            (send (list-ref labels i) set-label
                  (~a did " (" (node-a db) ", " (node-b db) "): " ((NMBS 'track-free?) (node-a (track db)) (node-b (track db))) " Max-speed: " (max-speed (track db)) " Sign: " ((infrabel 'get-track-sign) did)))
            (set! i (+ i 1))))
         (hash-for-each
          (rwm-ss rwm)
-         (lambda (sid ss)
+         (λ (sid ss)
            (send (list-ref labels i) set-label
                  (~a sid " (" (node-a ss) ", " (node-b ss) ", " (node-c ss) "): " ((NMBS 'track-free?) (node-a ss) (node-b ss)) " State: " (get-switch-state infrabel sid) " Max-speed: " (max-speed ss)))
            (set! i (+ i 1))))))

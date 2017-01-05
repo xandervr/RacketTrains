@@ -70,7 +70,7 @@
              [train  #f])
         (hash-for-each
          (rwm-ls rwm)
-         (lambda (tid t)
+         (λ (tid t)
            (let* ([location  (get-train-location infrabel tid)])
              (when (eq? location did)
                (set! train tid)))))
@@ -128,10 +128,10 @@
     (define (draw-canvas canvas dc)
       (send dc erase)
       (send dc draw-bitmap background 0 0)
-      (hash-for-each (rwm-ds rwm) (lambda (id db) (draw-detection-block db canvas dc)))
-      (for-each (lambda (t) (draw-track t canvas dc)) (rwm-ts rwm))
-      (hash-for-each (rwm-ss rwm) (lambda (id s) (draw-switch s canvas dc)))
-      (hash-for-each (rwm-ns rwm) (lambda (id n) (draw-node n canvas dc))))
+      (hash-for-each (rwm-ds rwm) (λ (id db) (draw-detection-block db canvas dc)))
+      (for-each (λ (t) (draw-track t canvas dc)) (rwm-ts rwm))
+      (hash-for-each (rwm-ss rwm) (λ (id s) (draw-switch s canvas dc)))
+      (hash-for-each (rwm-ns rwm) (λ (id n) (draw-node n canvas dc))))
 
     (define (schedule-train) ;prompt and process
       (let* ([train-id    (string->symbol (get-text-from-user "Add schedule" "Train ID" #f train-placeholder null))]
@@ -142,14 +142,14 @@
       (let ((width  0))
         (hash-for-each 
          (rwm-ns rwm) 
-         (lambda (nid node) (set! width (max width (get-x node)))))
+         (λ (nid node) (set! width (max width (get-x node)))))
         width))
 
     (define (calculate-height)
       (let ((height   0))
         (hash-for-each 
          (rwm-ns rwm) 
-         (lambda (nid node) (set! height (max height (get-y node)))))
+         (λ (nid node) (set! height (max height (get-y node)))))
         height))
 
     (define (dispatch msg)
@@ -175,7 +175,7 @@
     (define button-panel (new horizontal-panel% [parent frame]))
     (define canvas (new bitmap-canvas% [parent canvas-panel] [paint-callback draw-canvas] [bitmap background]))
     (define button (new button% [parent button-panel] [label "Schedule a train!"]
-                                [callback (lambda (button event) (schedule-train))]))
+                                [callback (λ (button event) (schedule-train))]))
     (define label-train-speed (new message% [parent button-panel] [label "Train speed: #f 0 m/s"] [min-width (- width 150)]))
     (define dc (send canvas get-dc))
 

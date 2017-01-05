@@ -72,7 +72,7 @@
                        (next-node n1 n2)
                        (next-node n2 n1)))
         (unless n3
-          (error "loco derailed" (loco-id loco)))
+          (error "loco derailed ⚡️🚅" (loco-id loco)))
         (check-collision (loco-id loco) (track n1 n2)
                          (position-distance pos) (if forward? tlen 0))
         (set! dx (- dx (if forward?
@@ -106,7 +106,7 @@
               ; check for crossing
               (when (not (= (sign (abs (- d1 op)))
                             (sign (abs (- d2 op)))))
-                (error "loco collided with antother loco" lid)))
+                (error "loco collided with antother loco 🚃💣💥🚅 " lid)))
             (other-locos-track-pos track lid)))
 
 (define (sign x)

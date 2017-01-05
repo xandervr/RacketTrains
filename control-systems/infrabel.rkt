@@ -14,12 +14,12 @@
   (define rwm (load-rwm railway))
 
   (define (update NMBS)
-    (hash-for-each (rwm-ls rwm) (lambda (id train) (process-train NMBS train))))
+    (hash-for-each (rwm-ls rwm) (λ (id train) (process-train NMBS train))))
 
   (define (get-track-sign db-id) ; #f = red #t = green
     (let ([sign #t])
       (hash-for-each (rwm-ls rwm)
-        (lambda (id train)
+        (λ (id train)
           (when (eq? (get-train-location id) db-id)
             (set! sign #f))))
       sign))

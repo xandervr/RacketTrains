@@ -24,26 +24,26 @@
 
     (define (populate-graph-hashmap)
       (let ([i 0])
-      (hash-for-each nodes-hashmap (lambda (nid value)
+      (hash-for-each nodes-hashmap (λ (nid value)
                                       (hash-set! gs nid i)
                                       (set! i (+ i 1))))
       i))
 
     (define (generate-graph-from-railway)
       (populate-graph-hashmap)
-      (for-each (lambda (track) (add-track-to-graph (node-a track) (node-b track))) tracks-list)
-      (hash-for-each db-hashmap (lambda (did db) (add-track-to-graph (node-a db) (node-b db))))
-      (hash-for-each switches-hashmap (lambda (sid switch) (add-track-to-graph (node-a switch) (node-b switch)) (add-track-to-graph (node-a switch) (node-c switch)))))
+      (for-each (λ (track) (add-track-to-graph (node-a track) (node-b track))) tracks-list)
+      (hash-for-each db-hashmap (λ (did db) (add-track-to-graph (node-a db) (node-b db))))
+      (hash-for-each switches-hashmap (λ (sid switch) (add-track-to-graph (node-a switch) (node-b switch)) (add-track-to-graph (node-a switch) (node-c switch)))))
 
     (define (get-node-id val)
       (let ([res #f])
-        (hash-for-each gs (lambda (id value)
+        (hash-for-each gs (λ (id value)
                             (when (= val value)
                               (set! res id))))
         res))
 
     (define (get-node-value id)
-      (hash-ref gs id (lambda () #f)))
+      (hash-ref gs id (λ () #f)))
 
     (define (convert-mcons-to-list mconslist)
       (if (null? mconslist)
@@ -54,7 +54,7 @@
       (let* ([g railwaygraph]
              [path (bft:shortest-path g (get-node-value nA) (get-node-value nB))])
         (map
-         (lambda (x)
+         (λ (x)
            (get-node-id x))
          (reverse (convert-mcons-to-list path)))))
 

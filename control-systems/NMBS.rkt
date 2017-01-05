@@ -17,20 +17,20 @@
 
   (define (print-rail-status)
     (for-each
-     (lambda (track)
+     (λ (track)
        (printf "Track: (~a ~a) ~a\n" (node-a track) (node-b track) (free? track))) (rwm-ts rwm))
     (hash-for-each (rwm-ds rwm)
-                   (lambda (id ds)
+                   (λ (id ds)
                      (printf "Db: ~a ~a\n" id (free? ds)))))
 
   (define (update)
     ;(print-rail-status)
     (hash-for-each (rwm-ls rwm) 
-                   (lambda (id train) 
+                   (λ (id train) 
                      (process-train infrabel train))))
 
   (define (process-train infrabel train)
-    (let ([location (hash-ref (rwm-ds rwm) (get-train-location infrabel (id train)) (lambda () #f))])
+    (let ([location (hash-ref (rwm-ds rwm) (get-train-location infrabel (id train)) (λ () #f))])
 
       (define (occupy-next-track)
         (let* ([schedule (train 'get-schedule)]
@@ -53,7 +53,7 @@
                 (cond
                   ((and t (detection-block? t)) (when (free? t (id train))
                                                                   (for-each  
-                                                                   (lambda (t-db) 
+                                                                   (λ (t-db) 
                                                                     (occupy! t-db (id train)))
                                                                    (cons t free-tracks))))
                   (t (when (free? t (id train))
@@ -92,7 +92,7 @@
   ;
 
   (define (drive-to! train-id node)
-    (let* ([location (hash-ref (rwm-ds rwm) (get-train-location infrabel train-id) (lambda () #f))]
+    (let* ([location (hash-ref (rwm-ds rwm) (get-train-location infrabel train-id) (λ () #f))]
            [path-1 ((graph-calculation 'calculate-shortest-path) (node-a location) node)]
            [path-2 ((graph-calculation 'calculate-shortest-path) (node-b location) node)])
       (if (> (length path-1) (length path-2))

@@ -35,7 +35,7 @@
         [ts '()]
         [ds (make-hash)])
     (for-each
-     (lambda (l)
+     (λ (l)
        (case (string->symbol (car l))
          [(L) (let* ([lid (string->symbol (list-ref l 1))]
                      [res (make-train lid)])
@@ -71,9 +71,9 @@
 
 
 (define (fetch-track rwm nA nB)
-  (let ([db (hash-ref (rwm-ds rwm) (find-db rwm nA nB) (lambda () #f))]
+  (let ([db (hash-ref (rwm-ds rwm) (find-db rwm nA nB) (λ () #f))]
         [t (find-track rwm nA nB)]
-        [s (hash-ref (rwm-ss rwm) (find-s rwm nA nB) (lambda () #f))])
+        [s (hash-ref (rwm-ss rwm) (find-s rwm nA nB) (λ () #f))])
     (or db t s)))
 
 (define (track-eqv? t1 t2)
@@ -83,7 +83,7 @@
            (eqv? (node-b t1) (node-a t2)))))
 
 (define (find-track rwm n1 n2)
-  (let ([track (findf (lambda (t2)
+  (let ([track (findf (λ (t2)
                         (let ([t1 (make-track n1 n2)])
                           (track-eqv? t1 t2)))
                       (rwm-ts rwm))])
@@ -92,7 +92,7 @@
 (define (find-db rwm n1 n2)
   (let ([d #f])
     (hash-for-each (rwm-ds rwm) 
-                   (lambda (did detection-block) 
+                   (λ (did detection-block) 
                      (let   ([t1 (make-track n1 n2)]
                              [t2 (detection-block 'get-track)])
                        (when (track-eqv? t1 t2)
@@ -102,7 +102,7 @@
 (define (find-s rwm n1 n2)
   (let ([s #f])
     (hash-for-each (rwm-ss rwm) 
-                   (lambda (sid switch) 
+                   (λ (sid switch) 
                      (let   ([t1 (make-track n1 n2)]
                              [t2 (make-track (node-a switch) (node-b switch))]
                              [t3 (make-track (node-a switch) (node-c switch))])
