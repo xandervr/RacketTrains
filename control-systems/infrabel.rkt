@@ -38,14 +38,11 @@
       (if (eq? (node-a t) nA)
           (set! dir +1)
           (set! dir -1))
-      (printf "T(~a ~a) N(~a ~a) ~a\n" (node-a t) (node-b t) nA nB dir)
       dir))
 
   (define (calculate-train-speed NMBS train)
     (let ([schedule (get-train-schedule NMBS (id train))]
           [location (get-loco-detection-block (id train))])
-
-      (printf "SCHEDULE: ~a\n" schedule)
 
       (define (calculate-track-max-speed)
         (let* ([t (fetch-track rwm (current-node schedule) (next-node schedule))]
@@ -69,7 +66,7 @@
                   (if (= (get-switch-state (id t)) 1) 1 2)
                   (if (= (get-switch-state (id t)) 2) 2 1)))
 
-              (when (and t (switch? t)) (printf "T(~a ~a) ~a\n" nA nB (find-right-switch-position)) (set-switch-state! (id t) (find-right-switch-position)) (printf "switch: ~a\n" (find-right-switch-position)))))
+              (when (and t (switch? t)) (set-switch-state! (id t) (find-right-switch-position))))
           
           (calculate-swith-position)
           (calculate-iter schedule)))
