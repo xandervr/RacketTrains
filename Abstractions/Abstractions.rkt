@@ -19,12 +19,15 @@
          set-train-schedule!
          insert-schedule!
          NMBS-drive-to!
+         NMBS-track-free?
          schedule
          node-a
          node-b
          node-c
          get-x
          get-y
+         middle-x
+         middle-y
          free?
          free!
          occupy!
@@ -38,6 +41,8 @@
 (define train-placeholder "L1")
 (define schedule-placeholder "A13 A12 A11 A9 A8 A7")
 (define ... void)
+(define middle-x car)
+(define middle-y cdr)
 (define current-node car)
 (define next-node cadr)
 (define second-node caddr)
@@ -66,6 +71,8 @@
   ((NMBS 'add-schedule!) id schedule))
 (define (NMBS-drive-to! NMBS id node)
   ((NMBS 'drive-to!) id node))
+(define (NMBS-track-free? NMBS nA nB)
+  ((NMBS 'track-free?) nA nB))
 (define (node-a track)
   (track 'get-nodeA))
 (define (node-b track)

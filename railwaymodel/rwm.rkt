@@ -13,12 +13,14 @@
 (require "switch.rkt")
 (require "track.rkt")
 (require "train.rkt")
+(require "../Abstractions/Abstractions.rkt")
 
 (provide (struct-out rwm)
          load-rwm
          fetch-track
          find-track
-         find-db)
+         find-db
+         find-nodes-middle)
 
 
 (struct rwm (ls ns ss ts ds))
@@ -75,10 +77,10 @@
     (or db t s)))
 
 (define (track-eqv? t1 t2)
-  (or (and (eqv? (t1 'get-nodeA) (t2 'get-nodeA))
-           (eqv? (t1 'get-nodeB) (t2 'get-nodeB)))
-      (and (eqv? (t1 'get-nodeA) (t2 'get-nodeB))
-           (eqv? (t1 'get-nodeB) (t2 'get-nodeA)))))
+  (or (and (eqv? (node-a t1) (node-a t2))
+           (eqv? (node-b t1) (node-b t2)))
+      (and (eqv? (node-a t1) (node-b t2))
+           (eqv? (node-b t1) (node-a t2)))))
 
 (define (find-track rwm n1 n2)
   (let ([track (findf (lambda (t2)
@@ -90,21 +92,28 @@
 (define (find-db rwm n1 n2)
   (let ([d #f])
     (hash-for-each (rwm-ds rwm) 
-                   (lambda (id detection-block) 
+                   (lambda (did detection-block) 
                      (let   ([t1 (make-track n1 n2)]
                              [t2 (detection-block 'get-track)])
                        (when (track-eqv? t1 t2)
-                         (set! d (detection-block 'get-id))))))
+                         (set! d (id detection-block))))))
     d))
 
 (define (find-s rwm n1 n2)
   (let ([s #f])
     (hash-for-each (rwm-ss rwm) 
-                   (lambda (id switch) 
+                   (lambda (sid switch) 
                      (let   ([t1 (make-track n1 n2)]
-                             [t2 (make-track (switch 'get-nodeA) (switch 'get-nodeB))]
-                             [t3 (make-track (switch 'get-nodeA) (switch 'get-nodeC))])
+                             [t2 (make-track (node-a switch) (node-b switch))]
+                             [t3 (make-track (node-a switch) (node-c switch))])
                        (when (or (track-eqv? t1 t2) (track-eqv? t1 t3))
-                         (set! s (switch 'get-id))))))
+                         (set! s (id switch))))))
     s))
+
+(define (find-nodes-middle nA nB)
+  (let* ((x1  (get-x nA))
+         (y1  (get-y nA))
+         (x2  (get-x nB))
+         (y2  (get-y nB)))
+    (cons (/ (+ x1 x2) 2) (/ (+ y1 y2) 2))))
 

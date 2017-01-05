@@ -93,9 +93,11 @@
 
   (define (drive-to! train-id node)
     (let* ([location (hash-ref (rwm-ds rwm) (get-train-location infrabel train-id) (lambda () #f))]
-           [path ((graph-calculation 'calculate-shortest-path) (node-a location) node)])
-      (printf "~a\n" path)
-      (add-schedule! train-id path)))
+           [path-1 ((graph-calculation 'calculate-shortest-path) (node-a location) node)]
+           [path-2 ((graph-calculation 'calculate-shortest-path) (node-b location) node)])
+      (if (> (length path-1) (length path-2))
+        (add-schedule! train-id path-1)
+        (add-schedule! train-id path-2))))
 
 
   (define (dispatch msg)
