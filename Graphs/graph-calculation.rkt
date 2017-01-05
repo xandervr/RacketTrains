@@ -14,20 +14,20 @@
 
 (define (make-graph-calculation)
   (let* ([rwm (load-rwm railway)]
-        [gs (make-hash)]
-        [nodes-hashmap (rwm-ns rwm)]
-        [nodes-count (hash-count nodes-hashmap)]
-        [tracks-list (rwm-ts rwm)]
-        [db-hashmap (rwm-ds rwm)]
-        [switches-hashmap (rwm-ss rwm)]
-        [railwaygraph (graph:new #f nodes-count)])
+         [gs (make-hash)]
+         [nodes-hashmap (rwm-ns rwm)]
+         [nodes-count (hash-count nodes-hashmap)]
+         [tracks-list (rwm-ts rwm)]
+         [db-hashmap (rwm-ds rwm)]
+         [switches-hashmap (rwm-ss rwm)]
+         [railwaygraph (graph:new #f nodes-count)])
 
     (define (populate-graph-hashmap)
       (let ([i 0])
-      (hash-for-each nodes-hashmap (λ (nid value)
-                                      (hash-set! gs nid i)
-                                      (set! i (+ i 1))))
-      i))
+        (hash-for-each nodes-hashmap (λ (nid value)
+                                       (hash-set! gs nid i)
+                                       (set! i (+ i 1))))
+        i))
 
     (define (generate-graph-from-railway)
       (populate-graph-hashmap)
@@ -70,61 +70,60 @@
         (when (not (eq? (next-node path) nD))
           (set! path (cons nD path)))
         (set! path (reverse path))
-        (post-process path)))
+        (make-path-possible path)))
 
 
-    (define (post-process path)
-      (let ((approved  '()))
-        (define (iter path)
+    (define (make-path-possible path)
+      (let ([correct '()])
+        (define (make-path-possible-iter path)
           (cond
-            ((null? path)    #t)
+            ((null? path)   #t)
             ((and (> (length path) 3)
-                  (eq? ((fetch-track rwm (current-node  path) (cadr  path)) 'get-type) 'switch)
-                  (eq? ((fetch-track rwm (cadr path) (caddr path)) 'get-type) 'switch)
-                  (eq?  ((fetch-track rwm (car  path) (cadr  path)) 'get-id)
-                        ((fetch-track rwm (cadr path) (caddr path)) 'get-id)))
-             (set! approved (cons (car path) approved))
-             (set! approved (cons (cadr path) approved))
-             ;; beginofmagic
-             (let ((res   '()))
-               (define (recursive cnode pnode)
+                  (switch? (fetch-track rwm (current-node path) (next-node  path)))
+                  (switch? (fetch-track rwm (next-node path) (second-node path)))
+                  (eq?  (id (fetch-track rwm (current-node  path) (next-node  path)))
+                        (id (fetch-track rwm (next-node path) (second-node path)))))
+             (set! correct (cons (current-node path) correct))
+             (set! correct (cons (next-node path) correct))
+             
+             (let ([res '()])
+               (define (recursive current-node previous-node)
                  (hash-for-each
                   (rwm-ns rwm)
-                  (lambda (id n)
-                    (let ((t (fetch-track rwm cnode id)))
+                  (lambda (nid n)
+                    (let ((t (fetch-track rwm current-node nid)))
                       (when (and t
-                                 (not (track-eqv? (fetch-track rwm pnode cnode) t)))
+                                 (not (track-eqv? (fetch-track rwm previous-node current-node) t)))
                         (cond
-                          ((eq? cnode (t 'get-nodeA))
+                          ((eq? current-node (node-a t))
                            (cond
-                             ((eq? (t 'get-type) 'detection-block)
-                              (set! approved (cons (t 'get-nodeB) approved)))
+                             ((detection-block? t)
+                              (set! correct (cons (node-b t) correct)))
                              (else 
-                              (set! res (cons (t 'get-nodeB) res))
-                              (set! approved (cons (t 'get-nodeB) approved))
-                              (recursive (t 'get-nodeB) (t 'get-nodeA)))))
+                              (set! res (cons (node-b t) res))
+                              (set! correct (cons (node-b t) correct))
+                              (recursive (node-b t) (node-a t)))))
                           (else 
                            (cond
-                             ((eq? (t 'get-type) 'detection-block)
-                              (set! approved (cons (t 'get-nodeA) approved)))
+                             ((detection-block? t)
+                              (set! correct (cons (node-a t) correct)))
                              (else 
-                              (set! res (cons (t 'get-nodeA) res))
-                              (set! approved (cons (t 'get-nodeA) approved))
-                              (recursive (t 'get-nodeA) (t 'get-nodeB)))))))))))
-               (recursive (cadr path) (car path))
+                              (set! res (cons (node-a t) res))
+                              (set! correct (cons (node-a t) correct))
+                              (recursive (node-a t) (node-b t)))))))))))
+               (recursive (next-node path) (current-node path))
                (for-each (lambda (r)
-                           (set! approved (cons r approved)))
+                           (set! correct (cons r correct)))
                          (reverse res)))
-             ;; endofmagic
-             (set! approved (cons (cadr path) approved))
-             (set! approved (cons (caddr path) approved))
-             (iter (cdr path)))
+             
+             (set! correct (cons (next-node path) correct))
+             (set! correct (cons (second-node path) correct))
+             (make-path-possible-iter (schedule-rest path)))
             (else
-             (set! approved (cons (car path) approved))
-             (iter (cdr path)))))
-        (iter path)
-        (printf "~a\n" (reverse approved))
-        (reverse approved)))
+             (set! correct (cons (current-node path) correct))
+             (iter (schedule-rest path)))))
+        (make-path-possible-iter path)
+        (reverse correct)))
 
 
     (define (add-track-to-graph nA nB)
