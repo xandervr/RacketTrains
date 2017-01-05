@@ -34,6 +34,7 @@
       (define (occupy-next-track)
         (let* ([schedule (train 'get-schedule)]
                [tf (fetch-track rwm (current-node schedule) (next-node schedule))])
+        
           (define (set-switch switch nA nB)
             (cond
               ((eq? nA (node-a switch))

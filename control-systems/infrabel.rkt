@@ -53,7 +53,20 @@
                 ((and t (detection-block? t)) (set! max-spd (min max-spd (max-speed t))) max-spd)
                 (t (set! max-spd (min max-spd (max-speed t))) (calculate-iter (schedule-rest schedule)))
                 (else (error "Could't calulate max speed.")))))
+
+          (define (calculate-swith-position)
+            (let* ([nA (next-node schedule)]
+                   [nB (second-node schedule)]
+                   [t (fetch-track rwm nA nB)])
+
+              (define (find-right-switch-position)
+                (if (and (eq? (node-a t) nA) (eq? (node-b t) nB))
+                  (if (= (get-switch-state (id t)) 1) 1 2)
+                  (if (= (get-switch-state (id t)) 2) 2 1)))
+
+              (when (and t (switch? t)) (set-switch-state! (id t) (find-right-switch-position)))))
           
+          (calculate-swith-position)
           (calculate-iter schedule)))
 
       (cond
