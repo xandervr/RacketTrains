@@ -26,7 +26,7 @@
              [nid   (id node)]
              [lbl-text   (~a nid)])
         (send dc set-text-foreground "blue")
-        (send dc draw-text lbl-text (- x 18) (- y 18))
+        ;(send dc draw-text lbl-text (- x 18) (- y 18))
         (set-pen-color dc "blue")
         (send dc draw-ellipse (- x 4) (- y 4) 8 8))) 
 
@@ -133,7 +133,7 @@
       (hash-for-each (rwm-ss rwm) (λ (id s) (draw-switch s canvas dc)))
       (hash-for-each (rwm-ns rwm) (λ (id n) (draw-node n canvas dc))))
 
-    (define (schedule-train) ;prompt and process
+    (define (schedule-train)
       (let* ([train-id    (string->symbol (get-text-from-user "Add schedule" "Train ID" #f train-placeholder null))]
              [to-node (string->symbol (get-text-from-user "Add destination" "Destination" #f schedule-placeholder null))])
         (NMBS-drive-to! NMBS train-id to-node)))
@@ -171,8 +171,8 @@
     (define frame (new frame% [label title]))
     (define background (read-bitmap "Resources/stones.bmp"))
     (define bmp-train (read-bitmap "Resources/train.bmp"))
-    (define canvas-panel (new horizontal-panel% [parent frame]  [min-height height] [min-width width]))
-    (define button-panel (new horizontal-panel% [parent frame]))
+    (define canvas-panel (new horizontal-panel% [parent frame] [min-height height] [min-width width]))
+    (define button-panel (new horizontal-panel% [parent frame] [min-height 40] [stretchable-height #f]))
     (define canvas (new bitmap-canvas% [parent canvas-panel] [paint-callback draw-canvas] [bitmap background]))
     (define button (new button% [parent button-panel] [label "Schedule a train!"]
                                 [callback (λ (button event) (schedule-train))]))

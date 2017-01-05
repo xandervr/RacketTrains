@@ -70,60 +70,68 @@
         (when (not (eq? (next-node path) nD))
           (set! path (cons nD path)))
         (set! path (reverse path))
-        (make-path-possible path)))
+        (fix-path path)))
 
 
-    (define (make-path-possible path)
-      (let ([correct '()])
-        (define (make-path-possible-iter path)
+    (define (fix-path path)
+      (let ([fixed-path '()])
+
+        (define (fix-path-iter path)
           (cond
-            ((null? path)   #t)
-            ((and (> (length path) 3)
-                  (switch? (fetch-track rwm (current-node path) (next-node  path)))
-                  (switch? (fetch-track rwm (next-node path) (second-node path)))
-                  (eq?  (id (fetch-track rwm (current-node  path) (next-node  path)))
-                        (id (fetch-track rwm (next-node path) (second-node path)))))
-             (set! correct (cons (current-node path) correct))
-             (set! correct (cons (next-node path) correct))
-             
-             (let ([res '()])
-               (define (recursive current-node previous-node)
-                 (hash-for-each
-                  (rwm-ns rwm)
-                  (lambda (nid n)
-                    (let ((t (fetch-track rwm current-node nid)))
-                      (when (and t
-                                 (not (track-eqv? (fetch-track rwm previous-node current-node) t)))
-                        (cond
-                          ((eq? current-node (node-a t))
-                           (cond
-                             ((detection-block? t)
-                              (set! correct (cons (node-b t) correct)))
-                             (else 
-                              (set! res (cons (node-b t) res))
-                              (set! correct (cons (node-b t) correct))
-                              (recursive (node-b t) (node-a t)))))
-                          (else 
-                           (cond
-                             ((detection-block? t)
-                              (set! correct (cons (node-a t) correct)))
-                             (else 
-                              (set! res (cons (node-a t) res))
-                              (set! correct (cons (node-a t) correct))
-                              (recursive (node-a t) (node-b t)))))))))))
-               (recursive (next-node path) (current-node path))
-               (for-each (lambda (r)
-                           (set! correct (cons r correct)))
-                         (reverse res)))
-             
-             (set! correct (cons (next-node path) correct))
-             (set! correct (cons (second-node path) correct))
-             (make-path-possible-iter (schedule-rest path)))
-            (else
-             (set! correct (cons (current-node path) correct))
-             (iter (schedule-rest path)))))
-        (make-path-possible-iter path)
-        (reverse correct)))
+            ((null? path) fixed-path)
+            ((> (length path) 2)
+             (let* ([nA (current-node path)]
+                    [nB (next-node path)]
+                    [nC (second-node path)]
+                    [trackAB (fetch-track rwm nA nB)]
+                    [trackBC (fetch-track rwm nB nC)])
+
+               (define (set-path-to-next-detection-block current-node previous-node)
+                 (let ([inner-path '()])
+
+                   (define (find-detection-block current-node previous-node)
+                     (hash-for-each
+                      (rwm-ns rwm)
+                      (lambda (nid n)
+                        (let ([next-track (fetch-track rwm current-node nid)]
+                              [current-track (fetch-track rwm previous-node current-node)])
+                          (when (and next-track
+                                     (not (track-eqv? current-track next-track)))
+                            (cond
+                              ((eq? current-track (node-a next-track))
+                               (cond
+                                 ((detection-block? next-track) (set! fixed-path (cons (node-b next-track) fixed-path)))
+                                 (else (set! inner-path (cons (node-b next-track) inner-path))
+                                       (set! fixed-path (cons (node-b next-track) fixed-path))
+                                       (find-detection-block (node-b next-track) (node-a next-track)))))
+                              (else 
+                               (cond
+                                 ((detection-block? next-track) (set! fixed-path (cons (node-a next-track) fixed-path)))
+                                 (else (set! inner-path (cons (node-a next-track) inner-path))
+                                       (set! fixed-path (cons (node-a next-track) fixed-path))
+                                       (find-detection-block (node-a next-track) (node-b next-track)))))))))))
+
+                   (find-detection-block current-node previous-node)
+                   (for-each (lambda (n)
+                               (set! fixed-path (cons n fixed-path)))
+                             (reverse inner-path))))
+
+              
+               (if (and
+                    (switch? trackAB)
+                    (switch? trackBC)
+                    (eq? (id trackAB) (id trackBC)))
+                   (begin (set! fixed-path (append (list nB nA) fixed-path))
+                          (set-path-to-next-detection-block nB nA)
+                          (set! fixed-path (append (list nC nB) fixed-path))
+                          (fix-path-iter (schedule-rest path)))
+                   (begin (set! fixed-path (cons (current-node path) fixed-path))
+                          (fix-path-iter (schedule-rest path))))))
+            (else (set! fixed-path (cons (current-node path) (schedule-rest fixed-path)))
+                  (fix-path-iter (schedule-rest path)))))
+
+        (fix-path-iter path)
+        (reverse fixed-path)))
 
 
     (define (add-track-to-graph nA nB)
