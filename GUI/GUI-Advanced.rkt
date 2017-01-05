@@ -26,7 +26,7 @@
              [nid   (id node)]
              [lbl-text   (~a nid)])
         (send dc set-text-foreground "blue")
-        ;(send dc draw-text lbl-text (- x 18) (- y 18))
+        (send dc draw-text lbl-text (- x 18) (- y 18))
         (set-pen-color dc "blue")
         (send dc draw-ellipse (- x 4) (- y 4) 8 8))) 
 

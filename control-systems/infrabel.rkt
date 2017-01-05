@@ -33,14 +33,19 @@
           (else (find-next-db (schedule-rest schedule))))))
 
   (define (calculate-train-speed-direction nA nB)
-    (let ([t (fetch-track rwm nA nB)])
+    (let ([t (fetch-track rwm nA nB)]
+          [dir +1])
       (if (eq? (node-a t) nA)
-          +1
-          -1)))
+          (set! dir +1)
+          (set! dir -1))
+      (printf "T(~a ~a) N(~a ~a) ~a\n" (node-a t) (node-b t) nA nB dir)
+      dir))
 
   (define (calculate-train-speed NMBS train)
     (let ([schedule (get-train-schedule NMBS (id train))]
           [location (get-loco-detection-block (id train))])
+
+      (printf "SCHEDULE: ~a\n" schedule)
 
       (define (calculate-track-max-speed)
         (let* ([t (fetch-track rwm (current-node schedule) (next-node schedule))]
@@ -64,14 +69,15 @@
                   (if (= (get-switch-state (id t)) 1) 1 2)
                   (if (= (get-switch-state (id t)) 2) 2 1)))
 
-              (when (and t (switch? t)) (set-switch-state! (id t) (find-right-switch-position)))))
+              (when (and t (switch? t)) (printf "T(~a ~a) ~a\n" nA nB (find-right-switch-position)) (set-switch-state! (id t) (find-right-switch-position)) (printf "switch: ~a\n" (find-right-switch-position)))))
           
           (calculate-swith-position)
           (calculate-iter schedule)))
 
+      (define t (fetch-track rwm (current-node schedule) (next-node schedule)))
       (cond
         ((<= (length schedule) 2) 0)
-        ((and (detection-block? (fetch-track rwm (current-node schedule) (next-node schedule))) (not (get-track-sign (find-next-db (schedule-rest schedule))))) 0)
+        ((and (detection-block? t) (not (get-track-sign (find-next-db (schedule-rest schedule))))) 0)
         (else (* (calculate-train-speed-direction (current-node schedule) (next-node schedule)) (min (calculate-track-max-speed) (max-speed train)))))))
 
   (define (process-train NMBS train)

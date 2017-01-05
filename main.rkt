@@ -15,13 +15,13 @@
   (let* 
     ([infrabel  (make-infrabel)]
      [NMBS  (make-NMBS infrabel)]
-     ;[GUI-log (make-GUI-log "RacketTrains Log" infrabel NMBS)]
+     [GUI-log (make-GUI-log "RacketTrains Log" infrabel NMBS)]
      [GUI-adv (make-GUI-adv "RacketTrains" infrabel NMBS)])
     
     (define (loop)
       (NMBS 'update)
       ((infrabel 'update) NMBS)
-      ;(GUI-log 'redraw!)
+      (GUI-log 'redraw!)
       (GUI-adv 'redraw!)
       (sleep 0.1)
       (loop))
