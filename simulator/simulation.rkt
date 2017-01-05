@@ -48,7 +48,6 @@
 
 (define (simul-loop)
   (when running?
-    (sleep 0.01)
     (for-each (lambda (loco)
                 (displace-loco loco))
               (rwm-ls model))
@@ -72,21 +71,19 @@
                        (next-node n1 n2)
                        (next-node n2 n1)))
         (unless n3
-          (error "loco derailed ⚡️🚅" (loco-id loco)))
+          (error "loco derailed" (loco-id loco)))
         (check-collision (loco-id loco) (track n1 n2)
                          (position-distance pos) (if forward? tlen 0))
         (set! dx (- dx (if forward?
                            (- tlen (position-distance pos))
                            (position-distance pos))))
-        (set-loco-position! loco (position (if forward?
-                                               n2
-                                               n3)
-                                           (if forward?
-                                               n3
-                                               n1)
+        (define new-track (track (if forward? n2 n3)
+                                 (if forward? n3 n1)))
+        (set-loco-position! loco (position (track-n1 new-track)
+                                           (track-n2 new-track)
                                            (if forward?
                                                0
-                                               tlen)))
+                                               (track-length new-track))))
         (while)))
     ; displacement within track length
     (define pos (loco-position loco))
@@ -106,7 +103,7 @@
               ; check for crossing
               (when (not (= (sign (abs (- d1 op)))
                             (sign (abs (- d2 op)))))
-                (error "loco collided with antother loco 🚃💣💥🚅 " lid)))
+                (error "loco collided with antother loco" lid)))
             (other-locos-track-pos track lid)))
 
 (define (sign x)

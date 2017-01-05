@@ -70,7 +70,62 @@
         (when (not (eq? (next-node path) nD))
           (set! path (cons nD path)))
         (set! path (reverse path))
-        path))
+        (post-process path)))
+
+
+    (define (post-process path)
+      (let ((approved  '()))
+        (define (iter path)
+          (cond
+            ((null? path)    #t)
+            ((and (> (length path) 3)
+                  (eq? ((fetch-track rwm (current-node  path) (cadr  path)) 'get-type) 'switch)
+                  (eq? ((fetch-track rwm (cadr path) (caddr path)) 'get-type) 'switch)
+                  (eq?  ((fetch-track rwm (car  path) (cadr  path)) 'get-id)
+                        ((fetch-track rwm (cadr path) (caddr path)) 'get-id)))
+             (set! approved (cons (car path) approved))
+             (set! approved (cons (cadr path) approved))
+             ;; beginofmagic
+             (let ((res   '()))
+               (define (recursive cnode pnode)
+                 (hash-for-each
+                  (rwm-ns rwm)
+                  (lambda (id n)
+                    (let ((t (fetch-track rwm cnode id)))
+                      (when (and t
+                                 (not (track-eqv? (fetch-track rwm pnode cnode) t)))
+                        (cond
+                          ((eq? cnode (t 'get-nodeA))
+                           (cond
+                             ((eq? (t 'get-type) 'detection-block)
+                              (set! approved (cons (t 'get-nodeB) approved)))
+                             (else 
+                              (set! res (cons (t 'get-nodeB) res))
+                              (set! approved (cons (t 'get-nodeB) approved))
+                              (recursive (t 'get-nodeB) (t 'get-nodeA)))))
+                          (else 
+                           (cond
+                             ((eq? (t 'get-type) 'detection-block)
+                              (set! approved (cons (t 'get-nodeA) approved)))
+                             (else 
+                              (set! res (cons (t 'get-nodeA) res))
+                              (set! approved (cons (t 'get-nodeA) approved))
+                              (recursive (t 'get-nodeA) (t 'get-nodeB)))))))))))
+               (recursive (cadr path) (car path))
+               (for-each (lambda (r)
+                           (set! approved (cons r approved)))
+                         (reverse res)))
+             ;; endofmagic
+             (set! approved (cons (cadr path) approved))
+             (set! approved (cons (caddr path) approved))
+             (iter (cdr path)))
+            (else
+             (set! approved (cons (car path) approved))
+             (iter (cdr path)))))
+        (iter path)
+        (printf "~a\n" (reverse approved))
+        (reverse approved)))
+
 
     (define (add-track-to-graph nA nB)
       (graph:add-edge! railwaygraph (get-node-value nA) (get-node-value nB)))

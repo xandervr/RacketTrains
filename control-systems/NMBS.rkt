@@ -67,8 +67,12 @@
             (let ([t (fetch-track rwm (current-node schedule) (next-node schedule))])
               (cond
                 (location (cond 
-                            ((and t (detection-block? t) (eq? (id location) (id t)))
-                             (if (and (> (length schedule) 2) (eq? (current-node schedule) (second-node schedule)))
+                            ((and t 
+                                  (detection-block? t) 
+                                  (eq? (id location) (id t)))
+                             (if (and 
+                                    (> (length schedule) 2) 
+                                    (eq? (current-node schedule) (second-node schedule)))
                                  (set-train-schedule! train (schedule-rest schedule))
                                  (set-train-schedule! train schedule))
                              (occupy-next-track))

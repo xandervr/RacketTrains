@@ -20,7 +20,8 @@
          fetch-track
          find-track
          find-db
-         find-nodes-middle)
+         find-nodes-middle
+         track-eqv?)
 
 
 (struct rwm (ls ns ss ts ds))
