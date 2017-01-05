@@ -50,13 +50,27 @@
           '()
           (cons (mcar mconslist) (convert-mcons-to-list (mcdr mconslist)))))
 
-    (define (calculate-shortest-path nA nB)
-      (let* ([g railwaygraph]
-             [path (bft:shortest-path g (get-node-value nA) (get-node-value nB))])
-        (map
-         (λ (x)
-           (get-node-id x))
-         (reverse (convert-mcons-to-list path)))))
+    (define (calculate-shortest-path dA dB)
+      (let* ([db-start    (hash-ref (rwm-ds rwm) dA)]
+             [db-end      (hash-ref (rwm-ds rwm) dB)]
+             [nA   (node-a db-start)]
+             [nB   (node-b db-start)]
+             [nC   (node-a db-end)]
+             [nD   (node-b db-end)]
+             [valA  (get-node-value nA)]
+             [valC  (get-node-value nC)]
+             [path (bft:shortest-path railwaygraph valA valC)])
+        (set! path (map
+                    (λ (value)
+                      (get-node-id value))
+                    (reverse (convert-mcons-to-list path))))
+        (when (not (eq? (next-node path) nB))
+          (set! path (cons nB path)))
+        (set! path (reverse path))
+        (when (not (eq? (next-node path) nD))
+          (set! path (cons nD path)))
+        (set! path (reverse path))
+        path))
 
     (define (add-track-to-graph nA nB)
       (graph:add-edge! railwaygraph (get-node-value nA) (get-node-value nB)))

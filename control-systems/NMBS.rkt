@@ -24,7 +24,6 @@
                      (printf "Db: ~a ~a\n" id (free? ds)))))
 
   (define (update)
-    ;(print-rail-status)
     (hash-for-each (rwm-ls rwm) 
                    (λ (id train) 
                      (process-train infrabel train))))
@@ -91,13 +90,10 @@
   ; GRAPHS
   ;
 
-  (define (drive-to! train-id node)
+  (define (drive-to! train-id db-id)
     (let* ([location (hash-ref (rwm-ds rwm) (get-train-location infrabel train-id) (λ () #f))]
-           [path-1 ((graph-calculation 'calculate-shortest-path) (node-a location) node)]
-           [path-2 ((graph-calculation 'calculate-shortest-path) (node-b location) node)])
-      (if (> (length path-1) (length path-2))
-        (add-schedule! train-id path-1)
-        (add-schedule! train-id path-2))))
+           [path ((graph-calculation 'calculate-shortest-path) (id location) db-id)])
+        (add-schedule! train-id path)))
 
 
   (define (dispatch msg)
