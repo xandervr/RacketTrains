@@ -14,6 +14,7 @@
   (let* ([rwm       (load-rwm railway)])
 
     (define (set-pen-color dc color)
+      (send dc set-smoothing 'smoothed)
       (if (eq? color "translucent") (send dc set-alpha 0) (send dc set-alpha 1))
       (send dc set-pen
             (send the-pen-list find-or-create-pen
@@ -25,7 +26,7 @@
              [nid   (id node)]
              [lbl-text   (~a nid)])
         (send dc set-text-foreground "blue")
-        (send dc draw-text lbl-text (+ x 5) (+ y 5))
+        ;(send dc draw-text lbl-text (- x 18) (- y 18))
         (set-pen-color dc "blue")
         (send dc draw-ellipse (- x 4) (- y 4) 8 8))) 
 
@@ -41,7 +42,7 @@
              [ym (middle-y middle)]
              [max-spd (max-speed track)]
              [track-free? (NMBS-track-free? NMBS (id nA) (id nB))]
-             [lbl-text (~a "T (" max-spd " m/s")])
+             [lbl-text (~a "T (" max-spd " m/s)")])
             (cond
           (track-free?
            (set-pen-color dc "cyan")  
@@ -89,8 +90,8 @@
         (when train
           (let* ([tid train]
                  [spd  (get-train-speed infrabel tid)])
-            (send dc draw-bitmap bmp-train (- xm 25) (- ym 25))
-            (send label-train-speed set-label (~a "Train speed: " (abs spd) " m/s"))))))
+            (send dc draw-bitmap bmp-train (- xm 50) (- ym 30))
+            (send label-train-speed set-label (~a "Train speed: " "(" tid ") " (abs spd) " m/s"))))))
 
     (define (draw-switch switch canvas dc)
       (let* ([nA  (hash-ref (rwm-ns rwm) (node-a switch))]
@@ -175,7 +176,7 @@
     (define canvas (new bitmap-canvas% [parent canvas-panel] [paint-callback draw-canvas] [bitmap background]))
     (define button (new button% [parent button-panel] [label "Schedule a train!"]
                                 [callback (lambda (button event) (schedule-train))]))
-    (define label-train-speed (new message% [parent button-panel] [label "Train speed: 0 m/s"]))
+    (define label-train-speed (new message% [parent button-panel] [label "Train speed: #f 0 m/s"] [min-width (- width 150)]))
     (define dc (send canvas get-dc))
 
     (send frame show #t)
