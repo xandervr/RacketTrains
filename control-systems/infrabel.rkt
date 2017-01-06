@@ -24,14 +24,17 @@
             (set! sign #f))))
       sign))
 
-  ; CHANGE!!!
-  (define (find-next-db schedule)
-      (let 
-        ([track (fetch-track rwm (current-node schedule) (next-node schedule))])
+  (define (calculate-next-detection-block schedule)
+      (let*
+        ([curr-node (current-node schedule)]
+         [nxt-node (next-node schedule)] 
+         [track (fetch-track rwm curr-node nxt-node)]
+         [track-id (id track)]
+         [next-nodes (schedule-rest schedule)])
         (cond
-          ((null? (schedule-rest schedule)) #f)
-          ((detection-block? track) (id track))
-          (else (find-next-db (schedule-rest schedule))))))
+          ((null? next-nodes) #f)
+          ((detection-block? track) track-id)
+          (else (calculate-next-detection-block next-nodes)))))
 
   (define (calculate-train-speed-direction nA nB)
     (let ([t (fetch-track rwm nA nB)]
@@ -42,8 +45,12 @@
       dir))
 
   (define (calculate-train-speed NMBS train)
-    (let ([schedule (get-train-schedule NMBS (id train))]
-          [location (get-loco-detection-block (id train))])
+    (let* ([schedule (get-train-schedule NMBS (id train))]
+          [location (get-loco-detection-block (id train))]
+          [curr-node (current-node schedule)]
+          [nxt-node (next-node schedule)]
+          [current-track (fetch-track rwm curr-node nxt-node)]
+          [rest-of-schedule (schedule-rest schedule)])
 
       (define (calculate-track-max-speed)
         (let* ([t (fetch-track rwm (current-node schedule) (next-node schedule))]
@@ -60,23 +67,25 @@
           (define (calculate-swith-position)
             (let* ([nA (next-node schedule)]
                    [nB (second-node schedule)]
-                   [t (fetch-track rwm nA nB)])
+                   [t (fetch-track rwm nA nB)]
+                   [tA (node-a t)]
+                   [tB (node-b t)]
+                   [tid (id t)])
 
               (define (find-right-switch-position)
-                (if (and (eq? (node-a t) nA) (eq? (node-b t) nB))
-                  (if (= (get-switch-state (id t)) 1) 1 2)
-                  (if (= (get-switch-state (id t)) 2) 2 1)))
+                (if (and (eq? tA nA) (eq? tB nB))
+                  (if (= (get-switch-state tid) 1) 1 2)
+                  (if (= (get-switch-state tid) 2) 2 1)))
 
-              (when (and t (switch? t)) (set-switch-state! (id t) (find-right-switch-position)))))
+              (when (and t (switch? t)) (set-switch-state! tid (find-right-switch-position)))))
           
           (calculate-swith-position)
           (calculate-iter schedule)))
 
-      (define t (fetch-track rwm (current-node schedule) (next-node schedule)))
       (cond
         ((<= (length schedule) 2) 0)
-        ((and (detection-block? t) (not (get-track-sign (find-next-db (schedule-rest schedule))))) 0)
-        (else (* (calculate-train-speed-direction (current-node schedule) (next-node schedule)) (min (calculate-track-max-speed) (max-speed train)))))))
+        ((and (detection-block? current-track) (not (get-track-sign (calculate-next-detection-block rest-of-schedule)))) 0)
+        (else (* (calculate-train-speed-direction curr-node nxt-node) (min (calculate-track-max-speed) (max-speed train)))))))
 
   (define (process-train NMBS train)
     (let ([schedule (get-train-schedule NMBS (id train))])
