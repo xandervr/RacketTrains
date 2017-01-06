@@ -7,7 +7,6 @@
 
 ; (require ...)
 
-(require "cart.rkt")
 (require "detection-block.rkt")
 (require "node.rkt")
 (require "switch.rkt")

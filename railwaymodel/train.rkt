@@ -5,18 +5,12 @@
 ; Copyright © 2016 Xander Van Raemdonck 2BA CW
 ;
 
-(require "locomotive.rkt")
-(require "cart.rkt")
-
 (provide make-train)
 
 (define (make-train id)
   (let ((type 'train)
         (schedule '())
         (max-speed  14))
-
-    (define (set-speed! new-speed)
-        (set! speed new-speed))
 
     (define (set-schedule! new-schedule)
         (set! schedule new-schedule))

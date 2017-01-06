@@ -29,11 +29,10 @@
         ([curr-node (current-node schedule)]
          [nxt-node (next-node schedule)] 
          [track (fetch-track rwm curr-node nxt-node)]
-         [track-id (id track)]
          [next-nodes (schedule-rest schedule)])
         (cond
           ((null? next-nodes) #f)
-          ((detection-block? track) track-id)
+          ((detection-block? track) (id track))
           (else (calculate-next-detection-block next-nodes)))))
 
   (define (calculate-train-speed-direction nA nB)
@@ -69,15 +68,14 @@
                    [nB (second-node schedule)]
                    [t (fetch-track rwm nA nB)]
                    [tA (node-a t)]
-                   [tB (node-b t)]
-                   [tid (id t)])
+                   [tB (node-b t)])
 
               (define (find-right-switch-position)
                 (if (and (eq? tA nA) (eq? tB nB))
-                  (if (= (get-switch-state tid) 1) 1 2)
-                  (if (= (get-switch-state tid) 2) 2 1)))
+                  (if (= (get-switch-state (id t)) 1) 1 2)
+                  (if (= (get-switch-state (id t)) 2) 2 1)))
 
-              (when (and t (switch? t)) (set-switch-state! tid (find-right-switch-position)))))
+              (when (and t (switch? t)) (set-switch-state! (id t) (find-right-switch-position)))))
           
           (calculate-swith-position)
           (calculate-iter schedule)))
@@ -88,10 +86,11 @@
         (else (* (calculate-train-speed-direction curr-node nxt-node) (min (calculate-track-max-speed) (max-speed train)))))))
 
   (define (process-train NMBS train)
-    (let ([schedule (get-train-schedule NMBS (id train))])
+    (let* ([tid (id train)]
+           [schedule (get-train-schedule NMBS tid)])
       (if (null? schedule)
-          (set-loco-speed! (id train) 0)
-          (set-loco-speed! (id train) (calculate-train-speed NMBS train)))))
+          (set-loco-speed! tid 0)
+          (set-loco-speed! tid (calculate-train-speed NMBS train)))))
 
   (define (get-train-location id)
     (get-loco-detection-block id))

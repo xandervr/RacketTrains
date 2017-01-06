@@ -36,7 +36,7 @@
       (for-each (λ (track) 
                   (let ([nA (node-a track)]
                         [nB (node-b track)])
-                  (add-track-to-graph nA nB))) tracks-list)
+                    (add-track-to-graph nA nB))) tracks-list)
       (hash-for-each db-hashmap (λ (did db) 
                                   (let ([nA (node-a db)]
                                         [nB (node-b db)])
@@ -94,23 +94,28 @@
                      (hash-for-each
                       (rwm-ns rwm)
                       (λ (nid n)
-                        (let ([next-track (fetch-track rwm current-node nid)]
-                              [current-track (fetch-track rwm previous-node current-node)])
+                        (let* ([next-track (fetch-track rwm current-node nid)]
+                               [next-track-nA #f]
+                               [next-track-nB #f]
+                               [current-track (fetch-track rwm previous-node current-node)]
+                               [current-track-nA (node-a current-track)])
                           (when (and next-track
                                      (not (track-eqv? current-track next-track)))
+                            (set! next-track-nA (node-a next-track))
+                            (set! next-track-nB (node-b next-track))
                             (cond
-                              ((eq? current-track (node-a next-track))
+                              ((eq? current-track-nA next-track-nA)
                                (cond
-                                 ((detection-block? next-track) (set! fixed-path (cons (node-b next-track) fixed-path)))
-                                 (else (set! inner-path (cons (node-b next-track) inner-path))
-                                       (set! fixed-path (cons (node-b next-track) fixed-path))
-                                       (find-detection-block (node-b next-track) (node-a next-track)))))
+                                 ((detection-block? next-track) (set! fixed-path (cons next-track-nB fixed-path)))
+                                 (else (set! inner-path (cons next-track-nB inner-path))
+                                       (set! fixed-path (cons next-track-nB fixed-path))
+                                       (find-detection-block next-track-nB next-track-nA))))
                               (else 
                                (cond
-                                 ((detection-block? next-track) (set! fixed-path (cons (node-a next-track) fixed-path)))
-                                 (else (set! inner-path (cons (node-a next-track) inner-path))
-                                       (set! fixed-path (cons (node-a next-track) fixed-path))
-                                       (find-detection-block (node-a next-track) (node-b next-track)))))))))))
+                                 ((detection-block? next-track) (set! fixed-path (cons next-track-nA fixed-path)))
+                                 (else (set! inner-path (cons next-track-nA inner-path))
+                                       (set! fixed-path (cons next-track-nA fixed-path))
+                                       (find-detection-block next-track-nA next-track-nB))))))))))
 
                    (find-detection-block current-node previous-node)
                    (for-each (λ (n)
@@ -157,7 +162,7 @@
     (define (add-track-to-graph nA nB)
       (let ([valA (get-node-value nA)]
             [valB (get-node-value nB)])
-      (graph:add-edge! railwaygraph valA valB)))
+        (graph:add-edge! railwaygraph valA valB)))
 
     
     (define (dispatch msg)

@@ -29,50 +29,59 @@
                        (process-train infrabel train))))
 
     (define (process-train infrabel train)
-      (let ([location (hash-ref (rwm-ds rwm) (get-train-location infrabel (id train)) (λ () #f))])
+      (let* ([tid (id train)]
+             [location (hash-ref (rwm-ds rwm) (get-train-location infrabel tid) (λ () #f))])
 
         (define (occupy-next-track)
           (let* ([schedule (schedule train)]
-                 [tf (fetch-track rwm (current-node schedule) (next-node schedule))])
+                 [tf (fetch-track rwm (current-node schedule) (next-node schedule))]
+                 [rest-of-schedule (schedule-rest schedule)])
 
             (define (set-switch switch nA nB)
-              (cond
-                ((eq? nA (node-a switch))
-                 (if (eq? nB (node-b switch))
-                     (set-switch-state! infrabel (id switch) 1)
-                     (set-switch-state! infrabel (id switch) 2)))
-                ((eq? nB (node-a switch))
-                 (if (eq? nA (node-b switch))
-                     (set-switch-state! infrabel (id switch) 1)
-                     (set-switch-state! infrabel (id switch) 2)))
-                (else (error "set-switch ---- NMBS"))))
+              (let ([sA (node-a switch)]
+                    [sB (node-b switch)]
+                    [sid (id switch)])
+                (cond
+                  ((eq? nA sA)
+                   (if (eq? nB sB)
+                       (set-switch-state! infrabel sid 1)
+                       (set-switch-state! infrabel sid 2)))
+                  ((eq? nB sA)
+                   (if (eq? nA sB)
+                       (set-switch-state! infrabel sid 1)
+                       (set-switch-state! infrabel sid 2)))
+                  (else (error "set-switch ---- NMBS")))))
 
-            (when (> (length (schedule-rest schedule)) 1)
+            (when (> (length rest-of-schedule) 1)
               (define (process-next-track schedule free-tracks)
-                (let ([t (fetch-track rwm (current-node schedule) (next-node schedule))])
+                (let* ([curr-node (current-node schedule)]
+                       [nxt-node (next-node schedule)]
+                       [t (fetch-track rwm curr-node nxt-node)])
                   (cond
-                    ((and t (detection-block? t)) (when (free? t (id train))
+                    ((and t (detection-block? t)) (when (free? t tid)
                                                     (for-each  
                                                      (λ (t-db) 
-                                                       (occupy! t-db (id train)))
+                                                       (occupy! t-db tid))
                                                      (cons t free-tracks))))
-                    (t (when (free? t (id train))
-                         (when (switch? t) (set-switch t (current-node schedule) (next-node schedule)))
+                    (t (when (free? t tid)
+                         (when (switch? t) (set-switch t curr-node nxt-node))
                          (process-next-track (schedule-rest schedule) (cons t free-tracks))))
                     (else (error "OCCUPYERROR")))))
-              (process-next-track (schedule-rest schedule) (list tf)))))
+              (process-next-track rest-of-schedule (list tf)))))
 
         (define (process-schedule schedule)
           (when (> (length schedule) 1)
-            (let ([t (fetch-track rwm (current-node schedule) (next-node schedule))])
+            (let* ([curr-node (current-node schedule)]
+                   [nxt-node (next-node schedule)]
+                   [t (fetch-track rwm curr-node nxt-node)])
               (cond
                 (location (cond 
                             ((and t 
                                   (detection-block? t) 
                                   (eq? (id location) (id t)))
                              (if (and 
-                                    (> (length schedule) 2) 
-                                    (eq? (current-node schedule) (second-node schedule)))
+                                  (> (length schedule) 2) 
+                                  (eq? curr-node (second-node schedule)))
                                  (set-train-schedule! train (schedule-rest schedule))
                                  (set-train-schedule! train schedule))
                              (occupy-next-track))
