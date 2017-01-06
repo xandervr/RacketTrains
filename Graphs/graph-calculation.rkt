@@ -33,31 +33,42 @@
     ; Generate graph from railway model
     (define (generate-graph-from-railway)
       (populate-graph-hashmap)
-      (for-each (λ (track) (add-track-to-graph (node-a track) (node-b track))) tracks-list)
-      (hash-for-each db-hashmap (λ (did db) (add-track-to-graph (node-a db) (node-b db))))
-      (hash-for-each switches-hashmap (λ (sid switch) (add-track-to-graph (node-a switch) (node-b switch)) (add-track-to-graph (node-a switch) (node-c switch)))))
+      (for-each (λ (track) 
+                  (let ([nA (node-a track)]
+                        [nB (node-b track)])
+                  (add-track-to-graph nA nB))) tracks-list)
+      (hash-for-each db-hashmap (λ (did db) 
+                                  (let ([nA (node-a db)]
+                                        [nB (node-b db)])
+                                    (add-track-to-graph nA nB))))
+      (hash-for-each switches-hashmap (λ (sid switch) 
+                                        (let ([nA (node-a switch)]
+                                              [nB (node-b switch)]
+                                              [nC (node-c switch)])
+                                          (add-track-to-graph nA nB) 
+                                          (add-track-to-graph nA nC)))))
 
 
     ; Find the shortest route between two detection blocks
     (define (calculate-shortest-path dA dB)
       (let* ([db-start    (hash-ref (rwm-ds rwm) dA)]
              [db-end      (hash-ref (rwm-ds rwm) dB)]
-             [nA   (node-a db-start)]
-             [nB   (node-b db-start)]
-             [nC   (node-a db-end)]
-             [nD   (node-b db-end)]
-             [valA  (get-node-value nA)]
-             [valC  (get-node-value nC)]
-             [path (bft:shortest-path railwaygraph valA valC)])
+             [nA-start   (node-a db-start)]
+             [nB-start  (node-b db-start)]
+             [nA-end   (node-a db-end)]
+             [nB-end   (node-b db-end)]
+             [valA-start  (get-node-value nA-start)]
+             [valA-end  (get-node-value nA-end)]
+             [path (bft:shortest-path railwaygraph valA-start valA-end)])
         (set! path (map
                     (λ (value)
                       (get-node-id value))
                     (reverse (convert-mcons-to-list path))))
-        (when (not (eq? (next-node path) nB))
-          (set! path (cons nB path)))
+        (when (not (eq? (next-node path) nB-start))
+          (set! path (cons nB-start path)))
         (set! path (reverse path))
-        (when (not (eq? (next-node path) nD))
-          (set! path (cons nD path)))
+        (when (not (eq? (next-node path) nB-end))
+          (set! path (cons nB-end path)))
         (set! path (reverse path))
         (fix-path path)))
 
@@ -144,7 +155,9 @@
 
     ; Create graph edge
     (define (add-track-to-graph nA nB)
-      (graph:add-edge! railwaygraph (get-node-value nA) (get-node-value nB)))
+      (let ([valA (get-node-value nA)]
+            [valB (get-node-value nB)])
+      (graph:add-edge! railwaygraph valA valB)))
 
     
     (define (dispatch msg)

@@ -31,7 +31,8 @@
         (send dc draw-ellipse (- x 4) (- y 4) 8 8))) 
 
     (define (draw-track track canvas dc)
-      (let* ([nA  (hash-ref (rwm-ns rwm) (node-a track))]
+      (let* ([max-spd (max-speed track)]
+             [nA  (hash-ref (rwm-ns rwm) (node-a track))]
              [nB  (hash-ref (rwm-ns rwm) (node-b track))]
              [x1  (get-x nA)]
              [y1  (get-y nA)]
@@ -40,7 +41,6 @@
              [middle (find-nodes-middle nA nB)]
              [xm (middle-x middle)]
              [ym (middle-y middle)]
-             [max-spd (max-speed track)]
              [track-free? (NMBS-track-free? NMBS (id nA) (id nB))]
              [lbl-text (~a "T (" max-spd " m/s)")])
             (cond
@@ -53,10 +53,43 @@
         (send dc draw-line x1 y1 x2 y2)
         (send dc draw-text lbl-text (+ xm 5) (+ ym 5))))
 
+    (define (draw-switch switch canvas dc)
+      (let* ([sid (id switch)]
+             [pos (get-switch-state infrabel sid)]
+             [nA  (hash-ref (rwm-ns rwm) (node-a switch))]
+             [nB  (hash-ref (rwm-ns rwm) (node-b switch))]
+             [nC  (hash-ref (rwm-ns rwm) (node-c switch))]
+             [nM  (hash-ref (rwm-ns rwm) sid)]
+             [x1  (get-x nA)]
+             [y1  (get-y nA)]
+             [x2  (get-x nB)]
+             [y2  (get-y nB)]
+             [x3  (get-x nC)]
+             [y3  (get-y nC)]
+             [x4  (get-x nM)]
+             [y4  (get-y nM)]
+             [track-free? (NMBS-track-free? NMBS (node-a switch) (node-b switch))])
+            (cond
+          (track-free?
+           (set-pen-color dc "cyan")  
+           (send dc set-text-foreground "darkcyan"))
+          (else
+           (set-pen-color dc "black")  
+           (send dc set-text-foreground "white")))
+        (send dc draw-line x1 y1 x4 y4)
+        (if (= pos 1)
+            (send dc draw-line x4 y4 x2 y2)
+            (send dc draw-line x4 y4 x3 y3))
+        (set-pen-color dc "translucent")
+        (if (= pos 2)
+            (send dc draw-line x4 y4 x2 y2)
+            (send dc draw-line x4 y4 x3 y3))))
+
     (define (draw-detection-block db canvas dc)
-      (let* ([nA  (hash-ref (rwm-ns rwm) (node-a db))]
+      (let* ([did  (id db)]
+             [max-spd (max-speed db)]
+             [nA  (hash-ref (rwm-ns rwm) (node-a db))]
              [nB  (hash-ref (rwm-ns rwm) (node-b db))]
-             [did  (id db)]
              [x1  (get-x nA)]
              [y1  (get-y nA)]
              [x2  (get-x nB)]
@@ -64,7 +97,6 @@
              [middle (find-nodes-middle nA nB)]
              [xm (middle-x middle)]
              [ym (middle-y middle)]
-             [max-spd (max-speed db)]
              [track-free? (NMBS-track-free? NMBS (node-a db) (node-b db))]
              [lbl-text (~a "D: " did " (" max-spd " m/s)")]
              [train  #f])
@@ -92,38 +124,6 @@
                  [spd  (get-train-speed infrabel tid)])
             (send dc draw-bitmap bmp-train (- xm 50) (- ym 30))
             (send label-train-speed set-label (~a "Train speed: " "(" tid ") " (abs spd) " m/s"))))))
-
-    (define (draw-switch switch canvas dc)
-      (let* ([nA  (hash-ref (rwm-ns rwm) (node-a switch))]
-             [nB  (hash-ref (rwm-ns rwm) (node-b switch))]
-             [nC  (hash-ref (rwm-ns rwm) (node-c switch))]
-             [sid (id switch)]
-             [nM  (hash-ref (rwm-ns rwm) sid)]
-             [pos (get-switch-state infrabel sid)]
-             [x1  (get-x nA)]
-             [y1  (get-y nA)]
-             [x2  (get-x nB)]
-             [y2  (get-y nB)]
-             [x3  (get-x nC)]
-             [y3  (get-y nC)]
-             [x4  (get-x nM)]
-             [y4  (get-y nM)]
-             [track-free? (NMBS-track-free? NMBS (node-a switch) (node-b switch))])
-            (cond
-          (track-free?
-           (set-pen-color dc "cyan")  
-           (send dc set-text-foreground "darkcyan"))
-          (else
-           (set-pen-color dc "black")  
-           (send dc set-text-foreground "white")))
-        (send dc draw-line x1 y1 x4 y4)
-        (if (= pos 1)
-            (send dc draw-line x4 y4 x2 y2)
-            (send dc draw-line x4 y4 x3 y3))
-        (set-pen-color dc "translucent")
-        (if (= pos 2)
-            (send dc draw-line x4 y4 x2 y2)
-            (send dc draw-line x4 y4 x3 y3))))
 
     (define (draw-canvas canvas dc)
       (send dc erase)

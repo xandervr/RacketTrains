@@ -24,6 +24,7 @@
             (set! sign #f))))
       sign))
 
+  ; CHANGE!!!
   (define (find-next-db schedule)
       (let 
         ([track (fetch-track rwm (current-node schedule) (next-node schedule))])
