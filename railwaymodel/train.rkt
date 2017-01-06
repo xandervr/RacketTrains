@@ -12,15 +12,9 @@
 
 (define (make-train id)
   (let ((type 'train)
-        (locomotive (make-locomotive id))
-        (carts '())
-        (speed 0)
         (schedule '())
         (max-speed  14))
 
-    (define (add-cart!)
-      (set! carts (cons (make-cart) carts)))
-      
     (define (set-speed! new-speed)
         (set! speed new-speed))
 
@@ -29,9 +23,6 @@
 
     (define (dispatch msg)
       (cond
-        ((eq? msg 'add-cart!)   (add-cart!))
-        ((eq? msg 'get-speed) speed)
-        ((eq? msg 'set-speed!) set-speed!)
         ((eq? msg 'get-max-speed) max-speed)
         ((eq? msg 'get-schedule)  schedule)
         ((eq? msg 'set-schedule!) set-schedule!)
