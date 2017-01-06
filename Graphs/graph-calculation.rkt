@@ -133,7 +133,7 @@
                           (fix-path-iter (schedule-rest path)))
                    (begin (set! fixed-path (cons (current-node path) fixed-path))
                           (fix-path-iter (schedule-rest path))))))
-            (else (set! fixed-path (cons (current-node path) (schedule-rest fixed-path)))
+            (else (set! fixed-path (cons (current-node path) fixed-path))
                   (fix-path-iter (schedule-rest path)))))
 
         (fix-path-iter path)
