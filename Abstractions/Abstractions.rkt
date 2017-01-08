@@ -10,7 +10,7 @@
          schedule-rest
          type
          max-speed
-         detection-block?
+         detection-track?
          track?
          switch?
          id
@@ -51,16 +51,16 @@
   (obj 'get-type))
 (define (max-speed obj)
   (obj 'get-max-speed))
-(define (detection-block? obj)
-  (eq? (type obj) 'detection-block))
+(define (detection-track? obj)
+  (eq? (type obj) 'detection-track))
 (define (track? obj)
   (eq? (type obj) 'track))
 (define (switch? obj)
   (eq? (type obj) 'switch))
 (define (id obj)
   (obj 'get-id))
-(define (track db)
-  (db 'get-track))
+(define (track dt)
+  (dt 'get-track))
 (define (get-train-schedule NMBS id)
   ((NMBS 'get-schedule) id))
 (define (set-train-schedule! train schedule)

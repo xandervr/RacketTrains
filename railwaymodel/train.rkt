@@ -8,9 +8,8 @@
 (provide make-train)
 
 (define (make-train id)
-  (let ((type 'train)
-        (schedule '())
-        (max-speed  14))
+  (let ([schedule '()]
+        [max-speed  14])
 
     (define (set-schedule! new-schedule)
         (set! schedule new-schedule))
@@ -21,6 +20,5 @@
         ((eq? msg 'get-schedule)  schedule)
         ((eq? msg 'set-schedule!) set-schedule!)
         ((eq? msg 'get-id)  id)
-        ((eq? msg 'get-type)    type)
         (else (error "Unknown message --- TRAIN"))))
     dispatch))

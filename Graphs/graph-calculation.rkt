@@ -37,9 +37,9 @@
                   (let ([nA (node-a track)]
                         [nB (node-b track)])
                     (add-track-to-graph nA nB))) tracks-list)
-      (hash-for-each db-hashmap (λ (did db) 
-                                  (let ([nA (node-a db)]
-                                        [nB (node-b db)])
+      (hash-for-each db-hashmap (λ (did dt) 
+                                  (let ([nA (node-a dt)]
+                                        [nB (node-b dt)])
                                     (add-track-to-graph nA nB))))
       (hash-for-each switches-hashmap (λ (sid switch) 
                                         (let ([nA (node-a switch)]
@@ -51,12 +51,12 @@
 
     ; Find the shortest route between two detection blocks
     (define (calculate-shortest-path dA dB)
-      (let* ([db-start    (hash-ref (rwm-ds rwm) dA)]
-             [db-end      (hash-ref (rwm-ds rwm) dB)]
-             [nA-start   (node-a db-start)]
-             [nB-start  (node-b db-start)]
-             [nA-end   (node-a db-end)]
-             [nB-end   (node-b db-end)]
+      (let* ([dt-start    (hash-ref (rwm-ds rwm) dA)]
+             [dt-end      (hash-ref (rwm-ds rwm) dB)]
+             [nA-start   (node-a dt-start)]
+             [nB-start  (node-b dt-start)]
+             [nA-end   (node-a dt-end)]
+             [nB-end   (node-b dt-end)]
              [valA-start  (get-node-value nA-start)]
              [valA-end  (get-node-value nA-end)]
              [path (bft:shortest-path railwaygraph valA-start valA-end)])
@@ -87,10 +87,10 @@
                     [trackAB (fetch-track rwm nA nB)]
                     [trackBC (fetch-track rwm nB nC)])
 
-               (define (set-path-to-next-detection-block current-node previous-node)
+               (define (set-path-to-next-detection-track current-node previous-node)
                  (let ([inner-path '()])
 
-                   (define (find-detection-block current-node previous-node)
+                   (define (find-detection-track current-node previous-node)
                      (hash-for-each
                       (rwm-ns rwm)
                       (λ (nid n)
@@ -106,18 +106,18 @@
                             (cond
                               ((eq? current-track-nA next-track-nA)
                                (cond
-                                 ((detection-block? next-track) (set! fixed-path (cons next-track-nB fixed-path)))
+                                 ((detection-track? next-track) (set! fixed-path (cons next-track-nB fixed-path)))
                                  (else (set! inner-path (cons next-track-nB inner-path))
                                        (set! fixed-path (cons next-track-nB fixed-path))
-                                       (find-detection-block next-track-nB next-track-nA))))
+                                       (find-detection-track next-track-nB next-track-nA))))
                               (else 
                                (cond
-                                 ((detection-block? next-track) (set! fixed-path (cons next-track-nA fixed-path)))
+                                 ((detection-track? next-track) (set! fixed-path (cons next-track-nA fixed-path)))
                                  (else (set! inner-path (cons next-track-nA inner-path))
                                        (set! fixed-path (cons next-track-nA fixed-path))
-                                       (find-detection-block next-track-nA next-track-nB))))))))))
+                                       (find-detection-track next-track-nA next-track-nB))))))))))
 
-                   (find-detection-block current-node previous-node)
+                   (find-detection-track current-node previous-node)
                    (for-each (λ (n)
                                (set! fixed-path (cons n fixed-path)))
                              (reverse inner-path))))
@@ -128,7 +128,7 @@
                     (switch? trackBC)
                     (eq? (id trackAB) (id trackBC)))
                    (begin (set! fixed-path (append (list nB nA) fixed-path))
-                          (set-path-to-next-detection-block nB nA)
+                          (set-path-to-next-detection-track nB nA)
                           (set! fixed-path (append (list nC nB) fixed-path))
                           (fix-path-iter (schedule-rest path)))
                    (begin (set! fixed-path (cons (current-node path) fixed-path))

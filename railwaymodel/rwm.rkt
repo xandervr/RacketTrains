@@ -7,7 +7,7 @@
 
 ; (require ...)
 
-(require "detection-block.rkt")
+(require "detection-track.rkt")
 (require "node.rkt")
 (require "switch.rkt")
 (require "track.rkt")
@@ -18,7 +18,7 @@
          load-rwm
          fetch-track
          find-track
-         find-db
+         find-dt
          find-nodes-middle
          track-eqv?)
 
@@ -61,7 +61,7 @@
                      [nA (string->symbol (list-ref l 2))]
                      [nB (string->symbol (list-ref l 3))]
                      [ms (string->number (list-ref l 4))]
-                     [res (make-detection-block id nA nB ms)])
+                     [res (make-detection-track id nA nB ms)])
                 (hash-set! ds id res))]))
      lines)
     (rwm ls ns ss ts ds)))
@@ -71,10 +71,10 @@
 
 
 (define (fetch-track rwm nA nB)
-  (let ([db (hash-ref (rwm-ds rwm) (find-db rwm nA nB) (λ () #f))]
+  (let ([dt (hash-ref (rwm-ds rwm) (find-dt rwm nA nB) (λ () #f))]
         [t (find-track rwm nA nB)]
         [s (hash-ref (rwm-ss rwm) (find-s rwm nA nB) (λ () #f))])
-    (or db t s)))
+    (or dt t s)))
 
 (define (track-eqv? t1 t2)
   (or (and (eqv? (node-a t1) (node-a t2))
@@ -89,14 +89,14 @@
                       (rwm-ts rwm))])
     track))
 
-(define (find-db rwm n1 n2)
+(define (find-dt rwm n1 n2)
   (let ([d #f])
     (hash-for-each (rwm-ds rwm) 
-                   (λ (did detection-block) 
+                   (λ (did dt) 
                      (let   ([t1 (make-track n1 n2)]
-                             [t2 (detection-block 'get-track)])
+                             [t2 (make-track (node-a dt) (node-b dt))])
                        (when (track-eqv? t1 t2)
-                         (set! d (id detection-block))))))
+                         (set! d (id dt))))))
     d))
 
 (define (find-s rwm n1 n2)

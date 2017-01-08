@@ -21,7 +21,7 @@
          (printf "Track: (~a ~a) ~a\n" (node-a track) (node-b track) (free? track))) (rwm-ts rwm))
       (hash-for-each (rwm-ds rwm)
                      (λ (id ds)
-                       (printf "Db: ~a ~a\n" id (free? ds)))))
+                       (printf "Dt: ~a ~a\n" id (free? ds)))))
 
     (define (update)
       (hash-for-each (rwm-ls rwm) 
@@ -58,10 +58,10 @@
                        [nxt-node (next-node schedule)]
                        [t (fetch-track rwm curr-node nxt-node)])
                   (cond
-                    ((and t (detection-block? t)) (when (free? t tid)
+                    ((and t (detection-track? t)) (when (free? t tid)
                                                     (for-each  
-                                                     (λ (t-db) 
-                                                       (occupy! t-db tid))
+                                                     (λ (t-dt) 
+                                                       (occupy! t-dt tid))
                                                      (cons t free-tracks))))
                     (t (when (free? t tid)
                          (when (switch? t) (set-switch t curr-node nxt-node))
@@ -77,7 +77,7 @@
               (cond
                 (location (cond 
                             ((and t 
-                                  (detection-block? t) 
+                                  (detection-track? t) 
                                   (eq? (id location) (id t)))
                              (if (and 
                                   (> (length schedule) 2) 
@@ -87,7 +87,7 @@
                              (occupy-next-track))
                             (else (free! t) (process-schedule (schedule-rest schedule)))))
                 (else (cond 
-                        ((and t (detection-block? t)) (free! t) (process-schedule (schedule-rest schedule)))
+                        ((and t (detection-track? t)) (free! t) (process-schedule (schedule-rest schedule)))
                         (else (set-train-schedule! train schedule))))))))
         (process-schedule (schedule train))))
 
@@ -108,9 +108,9 @@
     ; GRAPHS
     ;
 
-    (define (drive-to! train-id db-id)
+    (define (drive-to! train-id dt-id)
       (let* ([location (hash-ref (rwm-ds rwm) (get-train-location infrabel train-id) (λ () #f))]
-             [path ((graph-calculation 'calculate-shortest-path) (id location) db-id)])
+             [path ((graph-calculation 'calculate-shortest-path) (id location) dt-id)])
         (add-schedule! train-id path)))
 
 

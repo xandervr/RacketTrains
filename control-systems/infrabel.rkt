@@ -16,15 +16,15 @@
   (define (update NMBS)
     (hash-for-each (rwm-ls rwm) (λ (id train) (process-train NMBS train))))
 
-  (define (get-track-sign db-id) ; #f = red #t = green
+  (define (get-track-sign dt-id) ; #f = red #t = green
     (let ([sign #t])
       (hash-for-each (rwm-ls rwm)
         (λ (id train)
-          (when (eq? (get-train-location id) db-id)
+          (when (eq? (get-train-location id) dt-id)
             (set! sign #f))))
       sign))
 
-  (define (calculate-next-detection-block schedule)
+  (define (calculate-next-detection-track schedule)
       (let*
         ([curr-node (current-node schedule)]
          [nxt-node (next-node schedule)] 
@@ -32,8 +32,8 @@
          [next-nodes (schedule-rest schedule)])
         (cond
           ((null? next-nodes) #f)
-          ((detection-block? track) (id track))
-          (else (calculate-next-detection-block next-nodes)))))
+          ((detection-track? track) (id track))
+          (else (calculate-next-detection-track next-nodes)))))
 
   (define (calculate-train-speed-direction nA nB)
     (let ([t (fetch-track rwm nA nB)]
@@ -59,7 +59,7 @@
             (let ([t (fetch-track rwm (next-node schedule) (second-node schedule))])
               (cond
                 ((null? schedule) max-spd)
-                ((and t (detection-block? t)) (set! max-spd (min max-spd (max-speed t))) max-spd)
+                ((and t (detection-track? t)) (set! max-spd (min max-spd (max-speed t))) max-spd)
                 (t (set! max-spd (min max-spd (max-speed t))) (calculate-iter (schedule-rest schedule)))
                 (else (error "Could't calulate max speed.")))))
 
@@ -82,7 +82,7 @@
 
       (cond
         ((<= (length schedule) 2) 0)
-        ((and (detection-block? current-track) (not (get-track-sign (calculate-next-detection-block rest-of-schedule)))) 0)
+        ((and (detection-track? current-track) (not (get-track-sign (calculate-next-detection-track rest-of-schedule)))) 0)
         (else (* (calculate-train-speed-direction curr-node nxt-node) (min (calculate-track-max-speed) (max-speed train)))))))
 
   (define (process-train NMBS train)

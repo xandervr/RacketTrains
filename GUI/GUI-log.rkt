@@ -1,7 +1,7 @@
 #lang racket/gui
 
 ;
-; GUI ADT
+; GUI-log ADT
 ; Copyright © 2016 Xander Van Raemdonck 2BA CW
 ;
 
@@ -51,9 +51,9 @@
      (rwm-ts rwm))
     (hash-for-each
      (rwm-ds rwm)
-     (λ (did db)
+     (λ (did dt)
        (add-label!
-        (~a did ": " ((NMBS 'track-free?) (node-a (track db)) (node-b (track db)))))))
+        (~a did ": " ((NMBS 'track-free?) (node-a dt) (node-b dt))))))
     (hash-for-each
      (rwm-ss rwm)
      (λ (sid ss)
@@ -86,9 +86,9 @@
          (rwm-ts rwm))
         (hash-for-each
          (rwm-ds rwm)
-         (λ (did db)
+         (λ (did dt)
            (send (list-ref labels i) set-label
-                 (~a did " (" (node-a db) ", " (node-b db) "): " ((NMBS 'track-free?) (node-a (track db)) (node-b (track db))) " Max-speed: " (max-speed (track db)) " Sign: " ((infrabel 'get-track-sign) did)))
+                 (~a did " (" (node-a dt) ", " (node-b dt) "): " ((NMBS 'track-free?) (node-a dt) (node-b dt)) " Max-speed: " (max-speed dt) " Sign: " ((infrabel 'get-track-sign) did)))
            (set! i (+ i 1))))
         (hash-for-each
          (rwm-ss rwm)

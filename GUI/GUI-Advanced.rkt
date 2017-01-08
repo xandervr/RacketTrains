@@ -85,11 +85,11 @@
             (send dc draw-line x4 y4 x2 y2)
             (send dc draw-line x4 y4 x3 y3))))
 
-    (define (draw-detection-block db canvas dc)
-      (let* ([did  (id db)]
-             [max-spd (max-speed db)]
-             [nA  (hash-ref (rwm-ns rwm) (node-a db))]
-             [nB  (hash-ref (rwm-ns rwm) (node-b db))]
+    (define (draw-detection-track dt canvas dc)
+      (let* ([did  (id dt)]
+             [max-spd (max-speed dt)]
+             [nA  (hash-ref (rwm-ns rwm) (node-a dt))]
+             [nB  (hash-ref (rwm-ns rwm) (node-b dt))]
              [x1  (get-x nA)]
              [y1  (get-y nA)]
              [x2  (get-x nB)]
@@ -97,7 +97,7 @@
              [middle (find-nodes-middle nA nB)]
              [xm (middle-x middle)]
              [ym (middle-y middle)]
-             [track-free? (NMBS-track-free? NMBS (node-a db) (node-b db))]
+             [track-free? (NMBS-track-free? NMBS (node-a dt) (node-b dt))]
              [lbl-text (~a "D: " did " (" max-spd " m/s)")]
              [train  #f])
         (hash-for-each
@@ -128,7 +128,7 @@
     (define (draw-canvas canvas dc)
       (send dc erase)
       (send dc draw-bitmap background 0 0)
-      (hash-for-each (rwm-ds rwm) (λ (id db) (draw-detection-block db canvas dc)))
+      (hash-for-each (rwm-ds rwm) (λ (id dt) (draw-detection-track dt canvas dc)))
       (for-each (λ (t) (draw-track t canvas dc)) (rwm-ts rwm))
       (hash-for-each (rwm-ss rwm) (λ (id s) (draw-switch s canvas dc)))
       (hash-for-each (rwm-ns rwm) (λ (id n) (draw-node n canvas dc))))

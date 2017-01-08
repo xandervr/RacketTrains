@@ -8,8 +8,8 @@
 (provide make-track)
 
 (define (make-track nodeA nodeB [max-speed 10])
-  (let ((type   'track)
-        (occupied  #f))
+  (let ([type   'track]
+        [occupied  #f])
 
     (define (free!)
         (set! occupied #f))
