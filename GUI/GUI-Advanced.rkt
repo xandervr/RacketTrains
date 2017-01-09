@@ -7,7 +7,7 @@
 
 (provide make-GUI-adv)
 
-(require "../railwaymodel/rwm.rkt")
+(require "../ADT/rwm.rkt")
 (require "../Abstractions/Abstractions.rkt")
 
 (define (make-GUI-adv title infrabel NMBS)

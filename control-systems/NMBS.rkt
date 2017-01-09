@@ -5,7 +5,7 @@
 ; Copyright © 2016 Xander Van Raemdonck 2BA CW
 ;
 
-(require "../railwaymodel/rwm.rkt")
+(require "../ADT/rwm.rkt")
 (require "../Abstractions/Abstractions.rkt")
 (require "../Graphs/graph-calculation.rkt")
 

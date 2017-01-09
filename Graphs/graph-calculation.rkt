@@ -7,7 +7,7 @@
 
 (require (prefix-in graph: "graph/unweighted/config.rkt"))
 (require (prefix-in bft: "graph-algorithms/undirected/bft-applications.rkt"))
-(require "../railwaymodel/rwm.rkt")
+(require "../ADT/rwm.rkt")
 (require "../Abstractions/Abstractions.rkt")
 
 (provide make-graph-calculation)

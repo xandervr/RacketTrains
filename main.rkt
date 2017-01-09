@@ -5,8 +5,8 @@
 ; Copyright © 2016 Xander Van Raemdonck 2BA CW
 ;
 
-(require "control-systems/infrabel.rkt")
-(require "control-systems/NMBS.rkt")
+(require "Control-Systems/infrabel.rkt")
+(require "Control-Systems/NMBS.rkt")
 (require "GUI/GUI-log.rkt")
 (require "GUI/GUI-Advanced.rkt")
 

@@ -5,16 +5,16 @@
 ; Copyright © 2016 Xander Van Raemdonck 2BA CW
 ;
 
-(require "../railwaymodel/detection-track.rkt")
-(require "../railwaymodel/track.rkt")
-(require "../railwaymodel/switch.rkt")
-(require "../railwaymodel/train.rkt")
-(require "../railwaymodel/node.rkt")
+(require "../ADT/detection-track.rkt")
+(require "../ADT/track.rkt")
+(require "../ADT/switch.rkt")
+(require "../ADT/train.rkt")
+(require "../ADT/node.rkt")
 (require "../Graphs/graph-calculation.rkt")
-(require "../railwaymodel/rwm.rkt")
+(require "../ADT/rwm.rkt")
 (require (prefix-in graph: "../Graphs/graph/unweighted/config.rkt"))
-(require "../control-systems/NMBS.rkt")
-(require "../control-systems/infrabel.rkt")
+(require "../Control-Systems/NMBS.rkt")
+(require "../Control-Systems/infrabel.rkt")
 (require "../GUI/GUI-Advanced.rkt")
 (require rackunit
          rackunit/text-ui)
