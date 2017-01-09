@@ -112,6 +112,7 @@
       ((eq? msg 'get-train-speed) get-train-speed)
       ((eq? msg 'get-switch-state) get-switch-state)
       ((eq? msg 'set-switch-state!) set-switch-state!)
+      ((eq? msg 'exit!) (exit))
       (else (error "Unknown message ---- Infrabel"))))
 
   (start-simulator)

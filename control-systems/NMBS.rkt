@@ -108,7 +108,7 @@
     ; GRAPHS
     ;
 
-    (define (drive-to! train-id dt-id)
+    (define (drive-to-destination! train-id dt-id)
       (let* ([location (hash-ref (rwm-ds rwm) (get-train-location infrabel train-id) (λ () #f))]
              [path ((graph-calculation 'calculate-shortest-path) (id location) dt-id)])
         (add-schedule! train-id path)))
@@ -116,10 +116,11 @@
 
     (define (dispatch msg)
       (cond
-        ((eq? msg 'drive-to!) drive-to!)
+        ((eq? msg 'drive-to-destination!) drive-to-destination!)
         ((eq? msg 'add-schedule!) add-schedule!)
         ((eq? msg 'get-schedule) get-schedule)
         ((eq? msg 'track-free?) track-free?)
+        ((eq? msg 'exit!) (exit))
         ((eq? msg 'update) (update))))
 
     dispatch))

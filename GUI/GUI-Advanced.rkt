@@ -136,7 +136,7 @@
     (define (schedule-train)
       (let* ([train-id    (string->symbol (get-text-from-user "Add schedule" "Train ID" #f train-placeholder null))]
              [to-node (string->symbol (get-text-from-user "Add destination" "Destination" #f schedule-placeholder null))])
-        (NMBS-drive-to! NMBS train-id to-node)))
+        (NMBS-drive-to-destination! NMBS train-id to-node)))
 
      (define (calculate-width)
       (let ((width  0))
@@ -155,6 +155,7 @@
     (define (dispatch msg)
       (cond 
         ((eq? msg 'redraw!) (draw-canvas canvas dc))
+        ((eq? msg 'exit!) (exit))
         (else (error "Unknown message ---- GUI"))))
 
     (define bitmap-canvas%

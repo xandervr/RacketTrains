@@ -13,6 +13,11 @@
 (require "../Graphs/graph-calculation.rkt")
 (require "../railwaymodel/rwm.rkt")
 (require (prefix-in graph: "../Graphs/graph/unweighted/config.rkt"))
+(require "../control-systems/NMBS.rkt")
+(require "../control-systems/infrabel.rkt")
+(require "../GUI/GUI-Advanced.rkt")
+(require rackunit
+         rackunit/text-ui)
 
 (define (make-test)
   (let ([tests 0]
@@ -37,6 +42,8 @@
 
     (define train (make-train 'L1))
 
+    ; Test types
+
     (set! tests (+ tests 1))
     (if (eq? (detection-track 'get-type) 'detection-track) (set! succeeded (+ 1 succeeded)) (begin (printf "Detection-track type failed!\n") (set! failed (+ 1 failed))))
     (set! tests (+ tests 1))
@@ -44,6 +51,7 @@
     (set! tests (+ tests 1))
     (if (eq? (switch 'get-type) 'switch) (set! succeeded (+ 1 succeeded)) (begin (printf "Switch type failed!\n") (set! failed (+ 1 failed))))
 
+    ; Test max speed
     (set! tests (+ tests 1))
     (if (= (detection-track 'get-max-speed) 14) (set! succeeded (+ 1 succeeded)) (begin (printf "Detection-track max-speed failed!\n") (set! failed (+ 1 failed))))
     (set! tests (+ tests 1))
@@ -51,6 +59,7 @@
     (set! tests (+ tests 1))
     (if (= (switch 'get-max-speed) 12) (set! succeeded (+ 1 succeeded)) (begin (printf "Switch max-speed failed!\n") (set! failed (+ 1 failed))))
 
+    ; Test occupy and free
     (set! tests (+ tests 1))
     ((detection-track 'occupy!) (train 'get-id))
     (if (detection-track 'occupied?) (set! succeeded (+ 1 succeeded)) (begin (printf "Detection-track occupy failed!\n") (set! failed (+ 1 failed))))
@@ -72,6 +81,7 @@
     (switch 'free!)
     (if (not (switch 'occupied?)) (set! succeeded (+ 1 succeeded)) (begin (printf "Switch free failed!\n") (set! failed (+ 1 failed))))
 
+    ; Test get-node
     (set! tests (+ tests 1))
     (if (eq? (detection-track 'get-nodeA) 'A1) (set! succeeded (+ 1 succeeded)) (begin (printf "Detection-track node-a failed!\n") (set! failed (+ 1 failed))))
     (set! tests (+ tests 1))
@@ -92,12 +102,12 @@
     (define (node-exists? n)
       (let ([found #f])
       (hash-for-each graph-hashmap
-                     (lambda (id value)
+                     (λ (id value)
                       (when (eq? id n) (set! found #t))))
       found))
 
     (hash-for-each (rwm-ns rwm)
-                   (lambda (id value)
+                   (λ (id value)
                     (set! tests (+ tests 1))
                     (if (node-exists? id) (set! succeeded (+ 1 succeeded)) (begin (printf "~a was not found in graph!\n" id) (set! failed (+ 1 failed))))))
 
@@ -110,12 +120,103 @@
     (printf "GRAPHS TESTS (~a): ~a succeeded, ~a failed!\n" tests succeeded failed))
 
 
+  (define (test-Mocking)
+    (printf "Mocking TESTS\n")
+    (let* ([infrabel (make-infrabel)]
+           [NMBS (make-NMBS infrabel)]
+           [GUI-adv (make-GUI-adv "Trains" infrabel NMBS)])
+    
+    (define unit-tests
+      (test-suite "Trains Mocking"
+
+        ; Test train location
+        (test-case
+          "Testing train location"
+          (let () 
+            (simulate)
+            (define train-position ((infrabel 'get-train-location) 'L1))
+            (check-equal? train-position 'D9)))
+
+        ; Test destination succeeded
+        (test-case
+          "Test if train gets to destination"
+          (let () 
+            ((NMBS 'drive-to-destination!) 'L1 'D1)
+            (let test-destination ()
+                      (sleep 0.1)
+                      (simulate)
+                      (define train-position ((infrabel 'get-train-location) 'L1))
+                      (if (= ((infrabel 'get-train-speed) 'L1) 0) (check-equal? train-position 'D1) (test-destination)))))
+
+        ; Train is on D1
+        (test-case
+          "Test switch positioning in D1"
+          (let () 
+            (let test-switch ()
+                      (sleep 0.1)
+                      (simulate)
+                      (define train-position ((infrabel 'get-train-location) 'L1))
+                      (define switch-state ((infrabel 'get-switch-state) 'S1))
+                      (if (eq? train-position 'D1) 
+                        (check-equal? switch-state 1) 
+                        (test-switch)))))
+
+        (test-case
+          "Test switch positioning in D6 when driving to D9 from D1"
+          (let () 
+            ((NMBS 'drive-to-destination!) 'L1 'D9)
+            (let test-switch ()
+                      (sleep 0.1)
+                      (simulate)
+                      (define train-position ((infrabel 'get-train-location) 'L1))
+                      (define switch-state ((infrabel 'get-switch-state) 'S1))
+                      (if (eq? train-position 'D6) 
+                        (check-equal? switch-state 2)
+                        (test-switch)))))
+
+        (test-case
+          "Test if trains stops for the other train"
+          (let () 
+            (define (let-drive-to-D9)
+              (sleep 0.1)
+              (simulate)
+              (define train-position ((infrabel 'get-train-location) 'L1))
+              (when (not (eq? train-position 'D9)) (let-drive-to-D9)))
+            (let-drive-to-D9)
+            ((NMBS 'drive-to-destination!) 'L1 'D4)
+            (let test-stop ()
+                      (sleep 0.1)
+                      (simulate)
+                      (define train-position ((infrabel 'get-train-location) 'L1))
+                      (if (= ((infrabel 'get-train-speed) 'L1) 0) (check-equal? train-position 'D5) (test-stop)))))
+
+        (test-case
+          "Test if train continues when other train moves"
+          (let () 
+            ((NMBS 'drive-to-destination!) 'L2 'D1)
+            (let test-continue ()
+                      (sleep 0.1)
+                      (simulate)
+                      (define train-1-position ((infrabel 'get-train-location) 'L1))
+                      (define train-2-position ((infrabel 'get-train-location) 'L2))
+                      (if (and (= ((infrabel 'get-train-speed) 'L1) 0) (not (= ((infrabel 'get-train-speed) 'L2) 0)) (eq? train-2-position 'D2)) (check-equal? train-1-position 'D4) (test-continue)))))
+        ))
+
+    (define (simulate)
+      (NMBS 'update)
+      ((infrabel 'update) NMBS)
+      (GUI-adv 'redraw!))
+    (thread (lambda () (run-tests unit-tests) (NMBS 'exit!) (infrabel 'exit!) (GUI-adv 'exit!)))))
+
+
   (define (test-dispatch msg)
     (cond
       ((eq? msg 'test-ADT) (test-ADT))
-      ((eq? msg 'test-Graphs) (test-Graphs))))
+      ((eq? msg 'test-Graphs) (test-Graphs))
+      ((eq? msg 'test-Mocking) (test-Mocking))))
   test-dispatch))
 
 (define test (make-test))
 (test 'test-ADT)
 (test 'test-Graphs)
+(test 'test-Mocking)
