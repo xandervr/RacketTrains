@@ -168,6 +168,10 @@
     (define (dispatch msg)
       (cond
         ((eq? msg 'calculate-shortest-path) calculate-shortest-path)
+        ((eq? msg 'get-graph-hashmap) gs)
+        ((eq? msg 'get-node-value) get-node-value)
+        ((eq? msg 'get-node-id) get-node-id)
+        ((eq? msg 'get-graph) railwaygraph)
         (else (error "Unknown message ---- GRAPH-CALCULATION"))))
 
     (generate-graph-from-railway)
