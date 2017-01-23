@@ -18,7 +18,7 @@
          [nodes-hashmap (rwm-ns rwm)]
          [nodes-count (hash-count nodes-hashmap)]
          [tracks-list (rwm-ts rwm)]
-         [db-hashmap (rwm-ds rwm)]
+         [dt-hashmap (rwm-ds rwm)]
          [switches-hashmap (rwm-ss rwm)]
          [railwaygraph (graph:new #f nodes-count)])
 
@@ -37,7 +37,7 @@
                   (let ([nA (node-a track)]
                         [nB (node-b track)])
                     (add-track-to-graph nA nB))) tracks-list)
-      (hash-for-each db-hashmap (λ (did dt) 
+      (hash-for-each dt-hashmap (λ (did dt) 
                                   (let ([nA (node-a dt)]
                                         [nB (node-b dt)])
                                     (add-track-to-graph nA nB))))
