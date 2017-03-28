@@ -109,6 +109,7 @@
     ;
 
     (define (drive-to-destination! train-id dt-id)
+      (printf "~a ~a" train-id dt-id)
       (let* ([location (hash-ref (rwm-ds rwm) (get-train-location infrabel train-id) (λ () #f))]
              [path ((graph-calculation 'calculate-shortest-path) (id location) dt-id)])
         (add-schedule! train-id path)))

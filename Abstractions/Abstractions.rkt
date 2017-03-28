@@ -70,7 +70,7 @@
 (define (insert-schedule! NMBS id schedule)
   ((NMBS 'add-schedule!) id schedule))
 (define (NMBS-drive-to-destination! NMBS id node)
-  ((NMBS 'NMBS-drive-to-destination!) id node))
+  ((NMBS 'drive-to-destination!) id node))
 (define (NMBS-track-free? NMBS nA nB)
   ((NMBS 'track-free?) nA nB))
 (define (node-a track)
