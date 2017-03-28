@@ -5,7 +5,7 @@
 (provide get put post run
          make-TCP-server)
 
-(define (make-TCP-server port [server-name "Racket REST API/1.0"] [mime-type "application/json"])
+(define (make-TCP-server [server-name "Racket REST API/1.0"] [mime-type "application/json"])
 
   (define (serve port)
   (define listener (tcp-listen port 5 #t))
@@ -72,11 +72,11 @@
 
 (define (TCP-Server-dispatch msg)
   (cond
-    ((eq? msg 'run) (serve port))
+    ((eq? msg 'run) serve)
     ((eq? msg 'add-path!) add-path!)))
 TCP-Server-dispatch)
 
-(define tcp-server (make-TCP-server 8080))
+(define tcp-server (make-TCP-server))
 
 (define (get path function)
   ((tcp-server 'add-path!) path 'GET function))
@@ -87,6 +87,6 @@ TCP-Server-dispatch)
 (define (post path function)
   ((tcp-server 'add-path!) path 'POST function))
 
-(define (run)
-  (tcp-server 'run))
+(define (run [port 8080])
+  ((tcp-server 'run) port))
 
