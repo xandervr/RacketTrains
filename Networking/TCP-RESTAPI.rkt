@@ -1,8 +1,15 @@
 #lang racket
+
+;
+; TCP-RESTAPI
+; Copyright © 2017 Xander Van Raemdonck 2BA CW
+;
+
 (require net/url json)
 (require "status-codes.rkt")
 
 (provide get put post run
+         get-param-value
          make-TCP-server)
 
 (define (make-TCP-server [server-name "Racket REST API/1.0"] [mime-type "application/json"])
@@ -16,7 +23,8 @@
 
   (define (accept-and-handle listener)
   (define-values (in out) (tcp-accept listener))
-  (handle in out)
+  (with-handlers ([exn:fail? (lambda (exn) (display exn))])
+    (handle in out))
   (close-input-port in)
   (close-output-port out))
 
@@ -37,8 +45,9 @@
   ; Parse the request as a URL:
   (define url (string->url str-path))
   ; Extract the path part:
-  (define path str-path);(map path/param-path (url-path url)))
+  (define path (car (regexp-match #rx"[^?]*" str-path)));(map path/param-path (url-path url)))
   ; Find a handler based on the path's first element:
+  (printf "~a\n" path)
   (define h #f)
   
   (case method
@@ -77,6 +86,12 @@
 TCP-Server-dispatch)
 
 (define tcp-server (make-TCP-server))
+
+(define (get-param-value query key)
+  (cond 
+    ((null? query) #f)
+    ((eq? (caar query) key) (cdar query))
+    (else (get-param-value (cdr query) key))))
 
 (define (get path function)
   ((tcp-server 'add-path!) path 'GET function))
